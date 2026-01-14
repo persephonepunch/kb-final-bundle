@@ -425,6 +425,160 @@ function mapProductToWebflow(shopifyProduct) {
 module.exports = { mapProductToWebflow, extractShopifyId };</code></pre>
           </div>
         </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">User Schema Mapper</h2>
+          <p class="code-section-description">
+            Transform User data with Google Session and Consent State to Webflow CMS field structure.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript (scripts/user-schema-mapper.js)</span>
+              <button class="copy-button" data-copy="user-schema-mapper">
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-user-schema-mapper"><code>/**
+ * User Schema Mapper
+ * Maps user data with Google Session and Consent State to Webflow CMS
+ */
+
+function generateIdempotencyKey(userId, eventType) {
+  return `${userId}_${eventType}_${Date.now()}`;
+}
+
+function mapUserToWebflow(userData, sessionData, consentData) {
+  const {
+    userId,
+    email,
+    name,
+    shopifyCustomerId
+  } = userData;
+
+  const {
+    sessionId,
+    deviceInfo,
+    referrer,
+    landingPage,
+    events = []
+  } = sessionData || {};
+
+  const {
+    analytics = false,
+    marketing = false,
+    version = 'v1.0',
+    timestamp
+  } = consentData || {};
+
+  return {
+    // Required Webflow fields
+    name: name || email?.split('@')[0] || 'Anonymous',
+    slug: userId,
+
+    // User Identification
+    'user-id': userId,
+    'email': email || '',
+    'shopify-customer-id': shopifyCustomerId || '',
+
+    // Consent Status
+    'consent-status': JSON.stringify({
+      analytics: { granted: analytics, timestamp: timestamp || new Date().toISOString() },
+      marketing: { granted: marketing, timestamp: timestamp || new Date().toISOString() }
+    }),
+    'consent-analytics': analytics,
+    'consent-marketing': marketing,
+    'consent-timestamp': timestamp || new Date().toISOString(),
+    'consent-version': version,
+
+    // UCP Session / Google Session
+    'ucp-session-id': sessionId || '',
+    'ucp-tags': JSON.stringify(generateUserTags(userData, sessionData, consentData)),
+    'last-event-type': events[events.length - 1]?.type || 'session_start',
+    'last-event-timestamp': events[events.length - 1]?.timestamp || new Date().toISOString(),
+    'event-history': JSON.stringify(events.slice(-50)), // Keep last 50 events
+
+    // Idempotency Logic
+    'idempotency-key': generateIdempotencyKey(userId, 'user_sync'),
+    'last-processed-at': new Date().toISOString(),
+    'processing-status': 'completed',
+    'retry-count': 0,
+    'error-message': '',
+
+    // Webhook Management
+    'webhook-url': process.env.USER_WEBHOOK_URL || '',
+    'webhook-status': 'active',
+    'last-webhook-sent': new Date().toISOString(),
+    'webhook-failures': 0,
+
+    // Sync Status
+    'shopify-synced': !!shopifyCustomerId,
+    'google-ai-synced': true,
+    'last-sync-status': 'success',
+    'last-synced': new Date().toISOString(),
+  };
+}
+
+function generateUserTags(userData, sessionData, consentData) {
+  const tags = [];
+
+  // Device-based tags
+  if (sessionData?.deviceInfo?.type === 'mobile') tags.push('mobile-user');
+  if (sessionData?.deviceInfo?.type === 'desktop') tags.push('desktop-user');
+
+  // Traffic source tags
+  if (sessionData?.referrer?.includes('google')) tags.push('organic-traffic');
+  if (sessionData?.referrer?.includes('facebook')) tags.push('social-traffic');
+
+  // Consent tags
+  if (consentData?.analytics) tags.push('analytics-consent');
+  if (consentData?.marketing) tags.push('marketing-consent');
+
+  // Engagement tags
+  const eventCount = sessionData?.events?.length || 0;
+  if (eventCount > 10) tags.push('high-engagement');
+  if (eventCount > 50) tags.push('power-user');
+
+  // Purchase intent tags
+  const hasCartEvent = sessionData?.events?.some(e => e.type === 'add_to_cart');
+  if (hasCartEvent) tags.push('cart-active');
+
+  return tags;
+}
+
+function mapConsentUpdate(userId, consentData) {
+  return {
+    'consent-status': JSON.stringify({
+      analytics: { granted: consentData.analytics, timestamp: new Date().toISOString() },
+      marketing: { granted: consentData.marketing, timestamp: new Date().toISOString() }
+    }),
+    'consent-analytics': consentData.analytics,
+    'consent-marketing': consentData.marketing,
+    'consent-timestamp': new Date().toISOString(),
+    'consent-version': consentData.version || 'v1.0',
+    'idempotency-key': generateIdempotencyKey(userId, 'consent_update'),
+    'last-processed-at': new Date().toISOString(),
+    'last-synced': new Date().toISOString(),
+  };
+}
+
+function mapSessionEvent(userId, event) {
+  return {
+    'last-event-type': event.type,
+    'last-event-timestamp': event.timestamp || new Date().toISOString(),
+    'idempotency-key': generateIdempotencyKey(userId, event.type),
+    'last-processed-at': new Date().toISOString(),
+  };
+}
+
+module.exports = {
+  mapUserToWebflow,
+  mapConsentUpdate,
+  mapSessionEvent,
+  generateIdempotencyKey,
+  generateUserTags
+};</code></pre>
+          </div>
+        </div>
       </div>
 
       <!-- Sync Script Tab -->
