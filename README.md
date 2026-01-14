@@ -1,4 +1,4 @@
-# Webflow Integration Knowledge Base - Complete Bundle
+# Shopify Google Session Management
 
 ## 📦 Package Contents
 
