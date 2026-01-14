@@ -25,7 +25,7 @@ kb-final-bundle/
     ├── package.json                   # Dependencies
     ├── .eleventy.js                   # 11ty configuration
     ├── README.md                      # Project README
-    └── INTEGRATION_GUIDE.md           # Webflow/Shopify integration guide
+    └── INTEGRATION_GUIDE.md           # Webflow/Shopify/Google Session Layer integration guide
 ```
 
 ## 🚀 Quick Start
