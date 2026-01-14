@@ -212,6 +212,157 @@ The generated site is optimized for performance:
 - **Static HTML**: Pre-rendered pages for instant loading
 - **No runtime frameworks**: Pure HTML/CSS/JS for maximum speed
 
+## Environment Variables
+
+Create a `.env` file in your project root. Copy from `.env.example`:
+
+```bash
+# =============================================================================
+# ENVIRONMENT CONFIGURATION
+# =============================================================================
+# Copy this file to .env and fill in your actual values
+# NEVER commit .env to version control
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SHOPIFY STOREFRONT API (Public - for 11ty build)
+# -----------------------------------------------------------------------------
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+SHOPIFY_STOREFRONT_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SHOPIFY_STOREFRONT_API_VERSION=2024-01
+
+# -----------------------------------------------------------------------------
+# SHOPIFY ADMIN API (Private - for middleware/backend only)
+# -----------------------------------------------------------------------------
+SHOPIFY_ADMIN_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SHOPIFY_THEME_ID=123456789012
+
+# -----------------------------------------------------------------------------
+# SHOPIFY UCP CATALOG API
+# -----------------------------------------------------------------------------
+UCP_CATALOG_API_URL=https://catalog.shopify.com/api/v1
+UCP_CLIENT_ID=your-ucp-client-id
+UCP_CLIENT_SECRET=your-ucp-client-secret
+
+# -----------------------------------------------------------------------------
+# WEBFLOW API (Design Module Export)
+# -----------------------------------------------------------------------------
+WEBFLOW_API_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+WEBFLOW_SITE_ID=xxxxxxxxxxxxxxxxxxxxxxxx
+WEBFLOW_COLLECTION_ID=xxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# XANO MIDDLEWARE
+# -----------------------------------------------------------------------------
+XANO_API_BASE_URL=https://your-instance.xano.io/api
+XANO_API_KEY=xano_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+XANO_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# AUTHENTICATION (OAuth 2.0)
+# -----------------------------------------------------------------------------
+OAUTH_CLIENT_ID=your-oauth-client-id
+OAUTH_CLIENT_SECRET=your-oauth-client-secret
+OAUTH_AUTHORIZE_URL=https://identity-provider.example.com/authorize
+OAUTH_TOKEN_URL=https://identity-provider.example.com/token
+OAUTH_REDIRECT_URI=https://your-site.com/callback
+
+# -----------------------------------------------------------------------------
+# JWT CONFIGURATION
+# -----------------------------------------------------------------------------
+JWT_SECRET=your-256-bit-secret-key-here-minimum-32-chars
+JWT_ISSUER=your-app-name
+JWT_AUDIENCE=your-api-audience
+JWT_EXPIRY_HOURS=24
+
+# -----------------------------------------------------------------------------
+# GOOGLE AI / ANALYTICS
+# -----------------------------------------------------------------------------
+GOOGLE_AI_PROJECT_ID=your-gcp-project-id
+GOOGLE_AI_STREAM_ID=your-datastream-id
+GOOGLE_AI_STREAM_URL=wss://stream.google.com/data
+GOOGLE_AI_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+GOOGLE_AI_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"..."}
+
+# -----------------------------------------------------------------------------
+# WEBSOCKET / REAL-TIME
+# -----------------------------------------------------------------------------
+WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
+WEBSOCKET_API_KEY=ws_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# PAYMENT GATEWAY (A2P)
+# -----------------------------------------------------------------------------
+PAYMENT_GATEWAY_URL=https://payment-gateway.example.com
+PAYMENT_MERCHANT_ID=merch_xxxxxxxxxxxxx
+PAYMENT_PUBLIC_KEY=pk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+PAYMENT_SECRET_KEY=sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# DEPLOYMENT / CI-CD
+# -----------------------------------------------------------------------------
+NETLIFY_AUTH_TOKEN=nfp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NETLIFY_SITE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# IDEMPOTENCY / CACHING
+# -----------------------------------------------------------------------------
+REDIS_URL=redis://username:password@host:6379
+IDEMPOTENCY_TTL_HOURS=24
+CACHE_TTL_SECONDS=3600
+
+# -----------------------------------------------------------------------------
+# SECURITY
+# -----------------------------------------------------------------------------
+WEBHOOK_SIGNING_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ENCRYPTION_KEY=32-character-encryption-key-here
+HMAC_SECRET=your-hmac-signing-secret
+
+# -----------------------------------------------------------------------------
+# FEATURE FLAGS
+# -----------------------------------------------------------------------------
+ENABLE_GOOGLE_AI_STREAMING=true
+ENABLE_SHOPIFY_SYNC=true
+ENABLE_WEBHOOK_RETRY=true
+DEBUG_MODE=false
+
+# -----------------------------------------------------------------------------
+# RATE LIMITING
+# -----------------------------------------------------------------------------
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+RATE_LIMIT_BURST=20
+```
+
+### Getting API Keys
+
+| Service | Where to Get |
+|---------|--------------|
+| **Shopify Storefront** | Shopify Admin → Settings → Apps → Develop apps → Create app → Storefront API |
+| **Shopify Admin** | Shopify Admin → Settings → Apps → Develop apps → Create app → Admin API |
+| **Webflow** | Webflow Dashboard → Site Settings → Integrations → API Token |
+| **Xano** | Xano Dashboard → Settings → API Keys |
+| **Google AI** | Google Cloud Console → APIs & Services → Credentials |
+| **Netlify** | Netlify Dashboard → User Settings → Applications → Personal access tokens |
+| **GitHub** | GitHub → Settings → Developer settings → Personal access tokens |
+
+## API Documentation
+
+Full API endpoint schemas are available in the deployed documentation:
+
+- **PRD with API Schemas**: [/CLAUDE_PRD_11TY_SHOPIFY_UCP/](https://kb-webflow-docs.netlify.app/CLAUDE_PRD_11TY_SHOPIFY_UCP/)
+- **LLM Implementation Prompt**: [/LLM_IMPLEMENTATION_PROMPT/](https://kb-webflow-docs.netlify.app/LLM_IMPLEMENTATION_PROMPT/)
+
+### Available API Endpoints
+
+| API | Endpoints |
+|-----|-----------|
+| **Users** | `POST /users`, `GET /users/{id}`, `PATCH /users/{id}/consent`, `GET /users` |
+| **Products** | `GET /products`, `GET /products/{handle}`, `POST /products/sync` |
+| **UCP Session** | `POST /ucp/session`, `POST /ucp/event`, `PATCH /ucp/session/{id}/tags` |
+| **Idempotency** | `GET /idempotency/{key}`, `POST /idempotency`, `PATCH /idempotency/{key}` |
+| **Webhooks** | `POST /webhooks`, `GET /webhooks/{id}/deliveries` |
+
 ## License
 
 ISC
