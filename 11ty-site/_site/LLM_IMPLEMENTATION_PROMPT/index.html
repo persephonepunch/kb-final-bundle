@@ -1,37 +1,319 @@
-<h1>LLM Implementation Prompt: 11ty + Shopify UCP + Google AI Integration</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Implementation Prompt | Webflow Integration KB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="/" class="logo">
+          <div class="logo-icon">KB</div>
+          <span class="logo-text">Integration Docs</span>
+        </a>
+        
+        <nav class="nav-desktop">
+          <a href="/" class="nav-link ">
+            <span class="nav-icon">📖</span>
+            Overview
+          </a>
+          <a href="/architecture/" class="nav-link ">
+            <span class="nav-icon">🏗️</span>
+            Architecture
+          </a>
+          <a href="/implementation/" class="nav-link ">
+            <span class="nav-icon">💻</span>
+            Implementation
+          </a>
+          <a href="/eleventy-graphql/" class="nav-link ">
+            <span class="nav-icon">📄</span>
+            11ty GraphQL
+          </a>
+          <a href="/webflow-sync/" class="nav-link ">
+            <span class="nav-icon">🔄</span>
+            Webflow Sync
+          </a>
+          <a href="/prd/" class="nav-link ">
+            <span class="nav-icon">📋</span>
+            Claude PRD
+          </a>
+          <a href="/flow-chart/" class="nav-link ">
+            <span class="nav-icon">📊</span>
+            Flow Charts
+          </a>
+        </nav>
+      </div>
+      
+      <div class="header-right">
+        <div class="search-container">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search documentation...">
+          <span class="search-icon">🔍</span>
+        </div>
+        
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+          <span class="hamburger"></span>
+        </button>
+      </div>
+    </div>
+    
+    <nav class="nav-mobile" id="mobileNav">
+      <a href="/" class="nav-link-mobile">
+        <span class="nav-icon">📖</span>
+        Overview
+      </a>
+      <a href="/architecture/" class="nav-link-mobile">
+        <span class="nav-icon">🏗️</span>
+        Architecture
+      </a>
+      <a href="/implementation/" class="nav-link-mobile">
+        <span class="nav-icon">💻</span>
+        Implementation
+      </a>
+      <a href="/eleventy-graphql/" class="nav-link-mobile">
+        <span class="nav-icon">📄</span>
+        11ty GraphQL
+      </a>
+      <a href="/webflow-sync/" class="nav-link-mobile">
+        <span class="nav-icon">🔄</span>
+        Webflow Sync
+      </a>
+      <a href="/prd/" class="nav-link-mobile">
+        <span class="nav-icon">📋</span>
+        Claude PRD
+      </a>
+      <a href="/flow-chart/" class="nav-link-mobile">
+        <span class="nav-icon">📊</span>
+        Flow Charts
+      </a>
+    </nav>
+  </div>
+</header>
+
+  
+  <main class="main-content">
+    <div class="container">
+      <h1>LLM Implementation Prompt: 11ty + Shopify UCP + Google AI Integration</h1>
 <h2>Overview</h2>
 <p>This document provides a complete, step-by-step implementation prompt for Large Language Models (Claude, GPT-4, etc.) to build an Eleventy (11ty) static site with Shopify Universal Commerce Protocol (UCP) integration, OAuth 2.0 authentication, A2P payment processing, and Google AI data streaming.</p>
+<p><strong>Architecture:</strong></p>
+<ul>
+<li><strong>Webflow</strong> = Design Module only (visual design tool, no runtime responsibility)</li>
+<li><strong>CI/CD Pipeline</strong> = Publishes Webflow design components to dual targets</li>
+<li><strong>11ty</strong> = Static site templates with GraphQL data mapping from Shopify</li>
+<li><strong>Shopify Native</strong> = Mirror of synced front end (fallback and parity)</li>
+</ul>
 <hr>
 <h2>Prompt for LLM</h2>
-<pre><code>You are tasked with building a complete e-commerce static site using Eleventy (11ty) that integrates with modern commerce protocols and AI services. Follow these instructions carefully to implement each component.
+<pre><code>You are tasked with building a complete e-commerce static site system with the following architecture:
+
+- **Webflow** serves as a Design Module only - for visual component design
+- **CI/CD Pipeline** publishes Webflow designs to both 11ty and Shopify Native
+- **11ty** generates static pages with GraphQL data from Shopify
+- **Shopify Native** mirrors the front end for fallback/parity
+
+Follow these instructions carefully to implement each component.
 
 ## PROJECT REQUIREMENTS
 
-Build a static e-commerce site with the following features:
+Build a dual-target e-commerce system with the following features:
 
-1. **Static Site Generation**: Use Eleventy (11ty) v3.x with Nunjucks templates
-2. **Product Catalog**: Fetch products from Shopify's Universal Commerce Protocol (UCP) Catalog API
-3. **User Authentication**: Implement OAuth 2.0 with PKCE for secure login
-4. **Payment Processing**: Use Agent Payments Protocol (A2P) for cryptographic payment mandates
-5. **Real-time Data**: Stream user behavior to Google AI via WebSocket
-6. **Consent Management**: GDPR-compliant user consent tracking
-7. **Responsive Design**: Mobile-first CSS with BEM methodology
+1. **Webflow Design Module**: Visual design only, no runtime logic
+2. **CI/CD Design Publish Pipeline**: Transforms Webflow exports to 11ty + Shopify Native
+3. **Static Site Generation**: Use Eleventy (11ty) v3.x with Nunjucks templates
+4. **Shopify Native Mirror**: Liquid templates matching 11ty output
+5. **Product Catalog**: Fetch products from Shopify's UCP Catalog API via GraphQL
+6. **User Authentication**: Implement OAuth 2.0 with PKCE for secure login
+7. **Payment Processing**: Use Agent Payments Protocol (A2P) for cryptographic payment mandates
+8. **Real-time Data**: Stream user behavior to Google AI via WebSocket
+9. **Consent Management**: GDPR-compliant user consent tracking
 
 ## TECHNICAL STACK
 
-- **Frontend**: Eleventy 11ty, Nunjucks, Vanilla JavaScript (ES6+), CSS3
-- **APIs**: Shopify UCP Catalog REST API, OAuth 2.0, A2P Payment Gateway, Google AI Data Stream
-- **Data Flow**: REST APIs, WebSocket, Server-Sent Events
+- **Design**: Webflow Design Module (design-time only)
+- **CI/CD**: GitHub Actions, design transformation scripts
+- **Frontend**: Eleventy 11ty, Nunjucks, Shopify Liquid, Vanilla JavaScript (ES6+), CSS3
+- **APIs**: Shopify UCP Catalog GraphQL API, OAuth 2.0, A2P Payment Gateway, Google AI Data Stream
+- **Data Flow**: GraphQL, REST APIs, WebSocket, Server-Sent Events
 - **Security**: JWT tokens, TLS 1.3, PKCE, PCI DSS compliance
 
 ## IMPLEMENTATION STEPS
 
-### STEP 1: Initialize 11ty Project
+### STEP 0: CI/CD Design Publish Pipeline
 
-Create a new 11ty project with the following structure:
+Set up the GitHub Actions workflow that publishes Webflow design components to both 11ty and Shopify Native.
 
+**Create `.github/workflows/design-publish.yml`:**
+```yaml
+name: Design Component Publish
+
+on:
+  repository_dispatch:
+    types: [webflow-design-update]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target to publish (all, 11ty, shopify)'
+        default: 'all'
+
+jobs:
+  export-design:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Export Webflow Design Tokens
+        run: node scripts/export-webflow-design.js
+        env:
+          WEBFLOW_API_TOKEN: ${{ secrets.WEBFLOW_API_TOKEN }}
+          WEBFLOW_SITE_ID: ${{ secrets.WEBFLOW_SITE_ID }}
+
+      - name: Transform to 11ty Templates
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == '11ty'
+        run: node scripts/transform-to-nunjucks.js
+
+      - name: Transform to Shopify Liquid
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == 'shopify'
+        run: node scripts/transform-to-liquid.js
+
+      - name: Build 11ty Site
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == '11ty'
+        run: npm run build
+
+      - name: Deploy to Netlify
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == '11ty'
+        run: netlify deploy --prod --dir=_site
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Sync to Shopify Theme
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == 'shopify'
+        run: node scripts/sync-shopify-theme.js
+        env:
+          SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          SHOPIFY_ADMIN_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ADMIN_ACCESS_TOKEN }}
+          SHOPIFY_THEME_ID: ${{ secrets.SHOPIFY_THEME_ID }}
 </code></pre>
-<p>project-root/
+<p><strong>Create <code>scripts/export-webflow-design.js</code>:</strong></p>
+<pre><code class="language-javascript">/**
+ * Export Webflow design tokens and component structure
+ * This extracts CSS variables, typography, and component HTML
+ */
+const fs = require('fs').promises;
+
+async function exportWebflowDesign() {
+  // Extract design tokens from Webflow
+  const designTokens = {
+    colors: {
+      primary: '#000000',
+      accent: '#dc2626',
+      text: '#1f2937',
+      background: '#ffffff',
+      border: '#e5e7eb',
+    },
+    typography: {
+      fontFamily: &quot;'IBM Plex Sans', sans-serif&quot;,
+      fontSizes: {
+        xs: '0.75rem',
+        sm: '0.875rem',
+        base: '1rem',
+        lg: '1.125rem',
+        xl: '1.25rem',
+        '2xl': '1.5rem',
+        '3xl': '1.875rem',
+      },
+    },
+    spacing: {
+      unit: '8px',
+      xs: '4px',
+      sm: '8px',
+      md: '16px',
+      lg: '24px',
+      xl: '32px',
+    },
+  };
+
+  // Write design tokens for both targets
+  await fs.writeFile(
+    'src/_data/designTokens.json',
+    JSON.stringify(designTokens, null, 2)
+  );
+
+  console.log('Design tokens exported successfully');
+}
+
+exportWebflowDesign();
+</code></pre>
+<p><strong>Create <code>scripts/transform-to-liquid.js</code>:</strong></p>
+<pre><code class="language-javascript">/**
+ * Transform 11ty Nunjucks templates to Shopify Liquid
+ * Maintains parity between 11ty and Shopify Native
+ */
+const fs = require('fs').promises;
+const path = require('path');
+
+const nunjucksToLiquid = {
+  '{% include': '{% include',
+  '{% for ': '{% for ',
+  '{% endfor %}': '{% endfor %}',
+  '{% if ': '{% if ',
+  '{% endif %}': '{% endif %}',
+  '{{ ': '{{ ',
+  ' }}': ' }}',
+  '.njk': '.liquid',
+};
+
+async function transformToLiquid() {
+  const templatesDir = 'src/_includes';
+  const outputDir = 'shopify-theme/snippets';
+
+  await fs.mkdir(outputDir, { recursive: true });
+
+  // Transform component templates
+  const components = await fs.readdir(path.join(templatesDir, 'components'));
+
+  for (const file of components) {
+    if (file.endsWith('.njk')) {
+      let content = await fs.readFile(
+        path.join(templatesDir, 'components', file),
+        'utf-8'
+      );
+
+      // Basic Nunjucks to Liquid conversion
+      // Note: Complex logic may need manual adjustment
+      content = content
+        .replace(/\{\% include &quot;components\//g, '{% include &quot;')
+        .replace(/\.njk&quot; \%\}/g, '&quot; %}');
+
+      const liquidFile = file.replace('.njk', '.liquid');
+      await fs.writeFile(path.join(outputDir, liquidFile), content);
+      console.log(`Transformed: ${file} → ${liquidFile}`);
+    }
+  }
+
+  console.log('Shopify Liquid templates generated');
+}
+
+transformToLiquid();
+</code></pre>
+<h3>STEP 1: Initialize 11ty Project</h3>
+<p>Create a new 11ty project with the following structure:</p>
+<pre><code>project-root/
 ├── .eleventy.js           # 11ty configuration
 ├── package.json           # Dependencies
 ├── .env.example           # Environment variables template
@@ -56,11 +338,10 @@ Create a new 11ty project with the following structure:
 │   ├── index.njk          # Homepage
 │   ├── products.njk       # Product listing page
 │   └── checkout.njk       # Checkout page
-└── _site/                 # Generated static site (output)</p>
-<pre><code>
-**package.json dependencies:**
-```json
-{
+└── _site/                 # Generated static site (output)
+</code></pre>
+<p><strong>package.json dependencies:</strong></p>
+<pre><code class="language-json">{
   &quot;name&quot;: &quot;11ty-ucp-integration&quot;,
   &quot;version&quot;: &quot;1.0.0&quot;,
   &quot;scripts&quot;: {
@@ -156,118 +437,17 @@ module.exports = async function() {
 &lt;head&gt;
   &lt;meta charset=&quot;UTF-8&quot;&gt;
   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
-  &lt;title&gt;E-Commerce Store&lt;/title&gt;
+  &lt;title&gt;{{ title | default(&quot;E-Commerce Store&quot;) }}&lt;/title&gt;
   &lt;link rel=&quot;stylesheet&quot; href=&quot;/css/main.css&quot;&gt;
 &lt;/head&gt;
 &lt;body&gt;
-  &lt;header class=&quot;header&quot;&gt;
-  &lt;div class=&quot;container&quot;&gt;
-    &lt;div class=&quot;header-inner&quot;&gt;
-      &lt;div class=&quot;header-left&quot;&gt;
-        &lt;a href=&quot;/&quot; class=&quot;logo&quot;&gt;
-          &lt;div class=&quot;logo-icon&quot;&gt;KB&lt;/div&gt;
-          &lt;span class=&quot;logo-text&quot;&gt;Integration Docs&lt;/span&gt;
-        &lt;/a&gt;
-        
-        &lt;nav class=&quot;nav-desktop&quot;&gt;
-          &lt;a href=&quot;/&quot; class=&quot;nav-link &quot;&gt;
-            &lt;span class=&quot;nav-icon&quot;&gt;📖&lt;/span&gt;
-            Overview
-          &lt;/a&gt;
-          &lt;a href=&quot;/architecture/&quot; class=&quot;nav-link &quot;&gt;
-            &lt;span class=&quot;nav-icon&quot;&gt;🏗️&lt;/span&gt;
-            Architecture
-          &lt;/a&gt;
-          &lt;a href=&quot;/implementation/&quot; class=&quot;nav-link &quot;&gt;
-            &lt;span class=&quot;nav-icon&quot;&gt;💻&lt;/span&gt;
-            Implementation
-          &lt;/a&gt;
-          &lt;a href=&quot;/eleventy-graphql/&quot; class=&quot;nav-link &quot;&gt;
-            &lt;span class=&quot;nav-icon&quot;&gt;📄&lt;/span&gt;
-            11ty GraphQL
-          &lt;/a&gt;
-          &lt;a href=&quot;/webflow-sync/&quot; class=&quot;nav-link &quot;&gt;
-            &lt;span class=&quot;nav-icon&quot;&gt;🔄&lt;/span&gt;
-            Webflow Sync
-          &lt;/a&gt;
-          &lt;a href=&quot;/prd/&quot; class=&quot;nav-link &quot;&gt;
-            &lt;span class=&quot;nav-icon&quot;&gt;📋&lt;/span&gt;
-            Claude PRD
-          &lt;/a&gt;
-          &lt;a href=&quot;/flow-chart/&quot; class=&quot;nav-link &quot;&gt;
-            &lt;span class=&quot;nav-icon&quot;&gt;📊&lt;/span&gt;
-            Flow Charts
-          &lt;/a&gt;
-        &lt;/nav&gt;
-      &lt;/div&gt;
-      
-      &lt;div class=&quot;header-right&quot;&gt;
-        &lt;div class=&quot;search-container&quot;&gt;
-          &lt;input type=&quot;text&quot; id=&quot;searchInput&quot; class=&quot;search-input&quot; placeholder=&quot;Search documentation...&quot;&gt;
-          &lt;span class=&quot;search-icon&quot;&gt;🔍&lt;/span&gt;
-        &lt;/div&gt;
-        
-        &lt;button class=&quot;mobile-menu-toggle&quot; id=&quot;mobileMenuToggle&quot;&gt;
-          &lt;span class=&quot;hamburger&quot;&gt;&lt;/span&gt;
-        &lt;/button&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-    
-    &lt;nav class=&quot;nav-mobile&quot; id=&quot;mobileNav&quot;&gt;
-      &lt;a href=&quot;/&quot; class=&quot;nav-link-mobile&quot;&gt;
-        &lt;span class=&quot;nav-icon&quot;&gt;📖&lt;/span&gt;
-        Overview
-      &lt;/a&gt;
-      &lt;a href=&quot;/architecture/&quot; class=&quot;nav-link-mobile&quot;&gt;
-        &lt;span class=&quot;nav-icon&quot;&gt;🏗️&lt;/span&gt;
-        Architecture
-      &lt;/a&gt;
-      &lt;a href=&quot;/implementation/&quot; class=&quot;nav-link-mobile&quot;&gt;
-        &lt;span class=&quot;nav-icon&quot;&gt;💻&lt;/span&gt;
-        Implementation
-      &lt;/a&gt;
-      &lt;a href=&quot;/eleventy-graphql/&quot; class=&quot;nav-link-mobile&quot;&gt;
-        &lt;span class=&quot;nav-icon&quot;&gt;📄&lt;/span&gt;
-        11ty GraphQL
-      &lt;/a&gt;
-      &lt;a href=&quot;/webflow-sync/&quot; class=&quot;nav-link-mobile&quot;&gt;
-        &lt;span class=&quot;nav-icon&quot;&gt;🔄&lt;/span&gt;
-        Webflow Sync
-      &lt;/a&gt;
-      &lt;a href=&quot;/prd/&quot; class=&quot;nav-link-mobile&quot;&gt;
-        &lt;span class=&quot;nav-icon&quot;&gt;📋&lt;/span&gt;
-        Claude PRD
-      &lt;/a&gt;
-      &lt;a href=&quot;/flow-chart/&quot; class=&quot;nav-link-mobile&quot;&gt;
-        &lt;span class=&quot;nav-icon&quot;&gt;📊&lt;/span&gt;
-        Flow Charts
-      &lt;/a&gt;
-    &lt;/nav&gt;
-  &lt;/div&gt;
-&lt;/header&gt;
-
+  {% include &quot;components/header.njk&quot; %}
   
   &lt;main&gt;
-    
+    {{ content | safe }}
   &lt;/main&gt;
   
-  &lt;footer class=&quot;footer&quot;&gt;
-  &lt;div class=&quot;container&quot;&gt;
-    &lt;div class=&quot;footer-content&quot;&gt;
-      &lt;div class=&quot;footer-left&quot;&gt;
-        &lt;span class=&quot;footer-title&quot;&gt;Webflow Integration Knowledge Base&lt;/span&gt;
-        &lt;span class=&quot;footer-separator&quot;&gt;·&lt;/span&gt;
-        &lt;span&gt;Built with 11ty&lt;/span&gt;
-      &lt;/div&gt;
-      &lt;div class=&quot;footer-right&quot;&gt;
-        &lt;span&gt;Version 1.0&lt;/span&gt;
-        &lt;span class=&quot;footer-separator&quot;&gt;·&lt;/span&gt;
-        &lt;span&gt;2026&lt;/span&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-&lt;/footer&gt;
-
+  {% include &quot;components/footer.njk&quot; %}
   
   &lt;script src=&quot;/js/auth.js&quot;&gt;&lt;/script&gt;
   &lt;script src=&quot;/js/payment.js&quot;&gt;&lt;/script&gt;
@@ -293,20 +473,22 @@ title: &quot;Home - E-Commerce Store&quot;
   &lt;div class=&quot;container&quot;&gt;
     &lt;h2&gt;Featured Products&lt;/h2&gt;
     &lt;div class=&quot;product-grid&quot;&gt;
-      
+      {% for product in products %}
+        {% include &quot;components/product-card.njk&quot; %}
+      {% endfor %}
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/section&gt;
 </code></pre>
 <p><strong>src/_includes/components/product-card.njk:</strong></p>
 <pre><code class="language-html">&lt;article class=&quot;product-card&quot;&gt;
-  &lt;img src=&quot;&quot; alt=&quot;&quot; class=&quot;product-card__image&quot;&gt;
+  &lt;img src=&quot;{{ product.image }}&quot; alt=&quot;{{ product.name }}&quot; class=&quot;product-card__image&quot;&gt;
   &lt;div class=&quot;product-card__content&quot;&gt;
-    &lt;h3 class=&quot;product-card__title&quot;&gt;&lt;/h3&gt;
-    &lt;p class=&quot;product-card__description&quot;&gt;&lt;/p&gt;
+    &lt;h3 class=&quot;product-card__title&quot;&gt;{{ product.name }}&lt;/h3&gt;
+    &lt;p class=&quot;product-card__description&quot;&gt;{{ product.description }}&lt;/p&gt;
     &lt;div class=&quot;product-card__footer&quot;&gt;
-      &lt;span class=&quot;product-card__price&quot;&gt;$&lt;/span&gt;
-      &lt;button class=&quot;btn btn--primary&quot; data-product-id=&quot;&quot;&gt;
+      &lt;span class=&quot;product-card__price&quot;&gt;${{ product.price }}&lt;/span&gt;
+      &lt;button class=&quot;btn btn--primary&quot; data-product-id=&quot;{{ product.id }}&quot;&gt;
         Add to Cart
       &lt;/button&gt;
     &lt;/div&gt;
@@ -911,29 +1093,581 @@ body {
 </code></pre>
 <h3>STEP 9: Environment Configuration</h3>
 <p>Create <strong>.env.example:</strong></p>
-<pre><code># Shopify UCP Catalog API
-UCP_CATALOG_API_URL=https://catalog.shopify.com/api/v1
-UCP_CLIENT_ID=your-client-id
-UCP_CLIENT_SECRET=your-client-secret
+<pre><code class="language-bash"># =============================================================================
+# ENVIRONMENT CONFIGURATION - .env.example
+# =============================================================================
+# Copy this file to .env and fill in your actual values
+# NEVER commit .env to version control
+# =============================================================================
 
-# OAuth 2.0
+# -----------------------------------------------------------------------------
+# SHOPIFY STOREFRONT API (Public - for 11ty build)
+# -----------------------------------------------------------------------------
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+SHOPIFY_STOREFRONT_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SHOPIFY_STOREFRONT_API_VERSION=2024-01
+
+# -----------------------------------------------------------------------------
+# SHOPIFY ADMIN API (Private - for middleware/backend only)
+# -----------------------------------------------------------------------------
+SHOPIFY_ADMIN_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SHOPIFY_THEME_ID=123456789012
+
+# -----------------------------------------------------------------------------
+# SHOPIFY UCP CATALOG API
+# -----------------------------------------------------------------------------
+UCP_CATALOG_API_URL=https://catalog.shopify.com/api/v1
+UCP_CLIENT_ID=your-ucp-client-id
+UCP_CLIENT_SECRET=your-ucp-client-secret
+
+# -----------------------------------------------------------------------------
+# WEBFLOW API (Design Module Export)
+# -----------------------------------------------------------------------------
+WEBFLOW_API_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+WEBFLOW_SITE_ID=xxxxxxxxxxxxxxxxxxxxxxxx
+WEBFLOW_COLLECTION_ID=xxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# XANO MIDDLEWARE
+# -----------------------------------------------------------------------------
+XANO_API_BASE_URL=https://your-instance.xano.io/api
+XANO_API_KEY=xano_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+XANO_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# AUTHENTICATION (OAuth 2.0)
+# -----------------------------------------------------------------------------
+OAUTH_CLIENT_ID=your-oauth-client-id
+OAUTH_CLIENT_SECRET=your-oauth-client-secret
 OAUTH_AUTHORIZE_URL=https://identity-provider.example.com/authorize
 OAUTH_TOKEN_URL=https://identity-provider.example.com/token
-OAUTH_CLIENT_ID=your-oauth-client-id
-OAUTH_REDIRECT_URI=http://localhost:8080/callback
+OAUTH_REDIRECT_URI=https://your-site.com/callback
 
-# A2P Payment Gateway
-PAYMENT_GATEWAY_URL=https://payment-gateway.example.com
-PAYMENT_MERCHANT_ID=your-merchant-id
+# -----------------------------------------------------------------------------
+# JWT CONFIGURATION
+# -----------------------------------------------------------------------------
+JWT_SECRET=your-256-bit-secret-key-here-minimum-32-chars
+JWT_ISSUER=your-app-name
+JWT_AUDIENCE=your-api-audience
+JWT_EXPIRY_HOURS=24
 
-# Google AI Data Stream
+# -----------------------------------------------------------------------------
+# GOOGLE AI / ANALYTICS
+# -----------------------------------------------------------------------------
+GOOGLE_AI_PROJECT_ID=your-gcp-project-id
+GOOGLE_AI_STREAM_ID=your-datastream-id
 GOOGLE_AI_STREAM_URL=wss://stream.google.com/data
-GOOGLE_AI_API_KEY=your-api-key
+GOOGLE_AI_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+GOOGLE_AI_SERVICE_ACCOUNT_KEY={&quot;type&quot;:&quot;service_account&quot;,&quot;project_id&quot;:&quot;...&quot;}
 
-# WebSocket Server
+# -----------------------------------------------------------------------------
+# WEBSOCKET / REAL-TIME
+# -----------------------------------------------------------------------------
 WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
+WEBSOCKET_API_KEY=ws_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# PAYMENT GATEWAY (A2P)
+# -----------------------------------------------------------------------------
+PAYMENT_GATEWAY_URL=https://payment-gateway.example.com
+PAYMENT_MERCHANT_ID=merch_xxxxxxxxxxxxx
+PAYMENT_PUBLIC_KEY=pk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+PAYMENT_SECRET_KEY=sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# DEPLOYMENT / CI-CD
+# -----------------------------------------------------------------------------
+NETLIFY_AUTH_TOKEN=nfp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NETLIFY_SITE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# IDEMPOTENCY / CACHING
+# -----------------------------------------------------------------------------
+REDIS_URL=redis://username:password@host:6379
+IDEMPOTENCY_TTL_HOURS=24
+CACHE_TTL_SECONDS=3600
+
+# -----------------------------------------------------------------------------
+# SECURITY
+# -----------------------------------------------------------------------------
+WEBHOOK_SIGNING_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ENCRYPTION_KEY=32-character-encryption-key-here
+HMAC_SECRET=your-hmac-signing-secret
+
+# -----------------------------------------------------------------------------
+# FEATURE FLAGS
+# -----------------------------------------------------------------------------
+ENABLE_GOOGLE_AI_STREAMING=true
+ENABLE_SHOPIFY_SYNC=true
+ENABLE_WEBHOOK_RETRY=true
+DEBUG_MODE=false
+
+# -----------------------------------------------------------------------------
+# RATE LIMITING
+# -----------------------------------------------------------------------------
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+RATE_LIMIT_BURST=20
 </code></pre>
-<h3>STEP 10: Testing and Deployment</h3>
+<h3>STEP 10: API Endpoint Schema Reference</h3>
+<p>This section defines all API endpoints for Users, Products, UCP Sessions, and Idempotency management.</p>
+<h4>10.1 Users API</h4>
+<p><strong>Base URL:</strong> <code>https://your-middleware.xano.io/api/v1/users</code></p>
+<p><strong>Create User:</strong></p>
+<pre><code>POST /users
+Content-Type: application/json
+
+Request:
+{
+  &quot;email&quot;: &quot;user@example.com&quot;,
+  &quot;name&quot;: &quot;John Doe&quot;,
+  &quot;consent_analytics&quot;: true,
+  &quot;consent_marketing&quot;: false,
+  &quot;ucp_session_id&quot;: &quot;session_123456&quot;
+}
+
+Response (201 Created):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;user_id&quot;: &quot;usr_abc123def456&quot;,
+    &quot;email&quot;: &quot;user@example.com&quot;,
+    &quot;name&quot;: &quot;John Doe&quot;,
+    &quot;shopify_customer_id&quot;: &quot;gid://shopify/Customer/789&quot;,
+    &quot;consent_status&quot;: {
+      &quot;analytics&quot;: { &quot;granted&quot;: true, &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot; },
+      &quot;marketing&quot;: { &quot;granted&quot;: false, &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot; }
+    },
+    &quot;created_at&quot;: &quot;2026-01-14T12:00:00Z&quot;
+  },
+  &quot;idempotency_key&quot;: &quot;usr_abc123def456_create_1705233600000&quot;
+}
+</code></pre>
+<p><strong>Get User:</strong></p>
+<pre><code>GET /users/{user_id}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;user_id&quot;: &quot;usr_abc123def456&quot;,
+    &quot;email&quot;: &quot;user@example.com&quot;,
+    &quot;name&quot;: &quot;John Doe&quot;,
+    &quot;shopify_customer_id&quot;: &quot;gid://shopify/Customer/789&quot;,
+    &quot;consent_status&quot;: {
+      &quot;analytics&quot;: { &quot;granted&quot;: true, &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot; },
+      &quot;marketing&quot;: { &quot;granted&quot;: false, &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot; }
+    },
+    &quot;ucp_tags&quot;: [&quot;returning-customer&quot;, &quot;newsletter-subscriber&quot;],
+    &quot;last_event_type&quot;: &quot;page_view&quot;,
+    &quot;last_event_timestamp&quot;: &quot;2026-01-14T14:30:00Z&quot;,
+    &quot;sync_status&quot;: {
+      &quot;shopify_synced&quot;: true,
+      &quot;google_ai_synced&quot;: true,
+      &quot;last_synced&quot;: &quot;2026-01-14T14:30:00Z&quot;
+    },
+    &quot;created_at&quot;: &quot;2026-01-14T12:00:00Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-01-14T14:30:00Z&quot;
+  }
+}
+</code></pre>
+<p><strong>Update User Consent:</strong></p>
+<pre><code>PATCH /users/{user_id}/consent
+Content-Type: application/json
+
+Request:
+{
+  &quot;consent_analytics&quot;: true,
+  &quot;consent_marketing&quot;: true,
+  &quot;consent_version&quot;: &quot;v2.1&quot;
+}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;user_id&quot;: &quot;usr_abc123def456&quot;,
+    &quot;consent_status&quot;: {
+      &quot;analytics&quot;: { &quot;granted&quot;: true, &quot;timestamp&quot;: &quot;2026-01-14T15:00:00Z&quot;, &quot;version&quot;: &quot;v2.1&quot; },
+      &quot;marketing&quot;: { &quot;granted&quot;: true, &quot;timestamp&quot;: &quot;2026-01-14T15:00:00Z&quot;, &quot;version&quot;: &quot;v2.1&quot; }
+    },
+    &quot;webhook_triggered&quot;: true
+  },
+  &quot;idempotency_key&quot;: &quot;usr_abc123def456_consent_1705237200000&quot;
+}
+</code></pre>
+<p><strong>List Users (Admin):</strong></p>
+<pre><code>GET /users?page=1&amp;limit=50&amp;filter[consent_marketing]=true
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: [
+    { &quot;user_id&quot;: &quot;usr_abc123&quot;, &quot;email&quot;: &quot;user1@example.com&quot;, &quot;name&quot;: &quot;John Doe&quot; },
+    { &quot;user_id&quot;: &quot;usr_def456&quot;, &quot;email&quot;: &quot;user2@example.com&quot;, &quot;name&quot;: &quot;Jane Smith&quot; }
+  ],
+  &quot;pagination&quot;: {
+    &quot;page&quot;: 1,
+    &quot;limit&quot;: 50,
+    &quot;total&quot;: 1250,
+    &quot;total_pages&quot;: 25
+  }
+}
+</code></pre>
+<h4>10.2 Products API</h4>
+<p><strong>Base URL:</strong> <code>https://your-middleware.xano.io/api/v1/products</code></p>
+<p><strong>List Products:</strong></p>
+<pre><code>GET /products?page=1&amp;limit=20&amp;collection={collection_handle}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: [
+    {
+      &quot;product_id&quot;: &quot;prod_abc123&quot;,
+      &quot;shopify_id&quot;: &quot;gid://shopify/Product/12345&quot;,
+      &quot;title&quot;: &quot;Premium Widget&quot;,
+      &quot;handle&quot;: &quot;premium-widget&quot;,
+      &quot;description&quot;: &quot;A high-quality widget for all your needs&quot;,
+      &quot;price&quot;: { &quot;amount&quot;: &quot;99.99&quot;, &quot;currency_code&quot;: &quot;USD&quot; },
+      &quot;compare_at_price&quot;: { &quot;amount&quot;: &quot;129.99&quot;, &quot;currency_code&quot;: &quot;USD&quot; },
+      &quot;images&quot;: [{ &quot;url&quot;: &quot;https://cdn.shopify.com/...&quot;, &quot;alt_text&quot;: &quot;Premium Widget&quot; }],
+      &quot;available&quot;: true,
+      &quot;inventory_quantity&quot;: 150,
+      &quot;variants_count&quot;: 3,
+      &quot;tags&quot;: [&quot;featured&quot;, &quot;best-seller&quot;],
+      &quot;last_synced&quot;: &quot;2026-01-14T10:00:00Z&quot;
+    }
+  ],
+  &quot;pagination&quot;: {
+    &quot;page&quot;: 1,
+    &quot;limit&quot;: 20,
+    &quot;total&quot;: 500,
+    &quot;total_pages&quot;: 25,
+    &quot;has_next_page&quot;: true,
+    &quot;cursor&quot;: &quot;eyJsYXN0X2lkIjogMTIzNDV9&quot;
+  }
+}
+</code></pre>
+<p><strong>Get Product Detail:</strong></p>
+<pre><code>GET /products/{product_handle}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;product_id&quot;: &quot;prod_abc123&quot;,
+    &quot;shopify_id&quot;: &quot;gid://shopify/Product/12345&quot;,
+    &quot;title&quot;: &quot;Premium Widget&quot;,
+    &quot;handle&quot;: &quot;premium-widget&quot;,
+    &quot;description&quot;: &quot;A high-quality widget for all your needs&quot;,
+    &quot;description_html&quot;: &quot;&lt;p&gt;A high-quality widget...&lt;/p&gt;&quot;,
+    &quot;price_range&quot;: {
+      &quot;min&quot;: { &quot;amount&quot;: &quot;89.99&quot;, &quot;currency_code&quot;: &quot;USD&quot; },
+      &quot;max&quot;: { &quot;amount&quot;: &quot;119.99&quot;, &quot;currency_code&quot;: &quot;USD&quot; }
+    },
+    &quot;images&quot;: [
+      { &quot;id&quot;: &quot;img_1&quot;, &quot;url&quot;: &quot;https://cdn.shopify.com/...&quot;, &quot;alt_text&quot;: &quot;Front view&quot;, &quot;position&quot;: 1 },
+      { &quot;id&quot;: &quot;img_2&quot;, &quot;url&quot;: &quot;https://cdn.shopify.com/...&quot;, &quot;alt_text&quot;: &quot;Side view&quot;, &quot;position&quot;: 2 }
+    ],
+    &quot;variants&quot;: [
+      {
+        &quot;variant_id&quot;: &quot;var_001&quot;,
+        &quot;shopify_id&quot;: &quot;gid://shopify/ProductVariant/111&quot;,
+        &quot;title&quot;: &quot;Small / Blue&quot;,
+        &quot;sku&quot;: &quot;WIDGET-SM-BLU&quot;,
+        &quot;price&quot;: { &quot;amount&quot;: &quot;89.99&quot;, &quot;currency_code&quot;: &quot;USD&quot; },
+        &quot;available&quot;: true,
+        &quot;inventory_quantity&quot;: 50,
+        &quot;options&quot;: { &quot;size&quot;: &quot;Small&quot;, &quot;color&quot;: &quot;Blue&quot; }
+      }
+    ],
+    &quot;collections&quot;: [&quot;widgets&quot;, &quot;featured&quot;],
+    &quot;tags&quot;: [&quot;featured&quot;, &quot;best-seller&quot;, &quot;new-arrival&quot;],
+    &quot;seo&quot;: { &quot;title&quot;: &quot;Premium Widget - Best Quality&quot;, &quot;description&quot;: &quot;Shop our premium widget...&quot; },
+    &quot;created_at&quot;: &quot;2025-12-01T10:00:00Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-01-14T10:00:00Z&quot;,
+    &quot;last_synced&quot;: &quot;2026-01-14T10:00:00Z&quot;
+  }
+}
+</code></pre>
+<p><strong>Sync Products:</strong></p>
+<pre><code>POST /products/sync
+Content-Type: application/json
+
+Request:
+{
+  &quot;sync_type&quot;: &quot;full&quot;,
+  &quot;collection_handles&quot;: [&quot;all&quot;],
+  &quot;force_refresh&quot;: false
+}
+
+Response (202 Accepted):
+{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;Product sync initiated&quot;,
+  &quot;job_id&quot;: &quot;sync_job_123456&quot;,
+  &quot;estimated_products&quot;: 500,
+  &quot;webhook_url&quot;: &quot;https://your-middleware.xano.io/api/v1/products/sync/status/sync_job_123456&quot;
+}
+</code></pre>
+<h4>10.3 UCP Session API</h4>
+<p><strong>Base URL:</strong> <code>https://your-middleware.xano.io/api/v1/ucp</code></p>
+<p><strong>Create/Update Session:</strong></p>
+<pre><code>POST /ucp/session
+Content-Type: application/json
+
+Request:
+{
+  &quot;session_id&quot;: &quot;session_123456789&quot;,
+  &quot;user_id&quot;: &quot;usr_abc123def456&quot;,
+  &quot;device_info&quot;: { &quot;type&quot;: &quot;mobile&quot;, &quot;browser&quot;: &quot;Chrome&quot;, &quot;os&quot;: &quot;iOS 17&quot; },
+  &quot;referrer&quot;: &quot;https://google.com&quot;,
+  &quot;landing_page&quot;: &quot;/products/premium-widget&quot;
+}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;session_id&quot;: &quot;session_123456789&quot;,
+    &quot;user_id&quot;: &quot;usr_abc123def456&quot;,
+    &quot;is_new_session&quot;: true,
+    &quot;consent_required&quot;: true,
+    &quot;ucp_tags&quot;: [&quot;mobile-user&quot;, &quot;organic-traffic&quot;],
+    &quot;created_at&quot;: &quot;2026-01-14T12:00:00Z&quot;
+  }
+}
+</code></pre>
+<p><strong>Track Event:</strong></p>
+<pre><code>POST /ucp/event
+Content-Type: application/json
+
+Request:
+{
+  &quot;session_id&quot;: &quot;session_123456789&quot;,
+  &quot;event_type&quot;: &quot;add_to_cart&quot;,
+  &quot;event_data&quot;: {
+    &quot;product_id&quot;: &quot;prod_abc123&quot;,
+    &quot;variant_id&quot;: &quot;var_001&quot;,
+    &quot;quantity&quot;: 1,
+    &quot;price&quot;: 89.99
+  },
+  &quot;page&quot;: &quot;/products/premium-widget&quot;,
+  &quot;timestamp&quot;: &quot;2026-01-14T12:05:00Z&quot;
+}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;event_id&quot;: &quot;evt_xyz789&quot;,
+    &quot;session_id&quot;: &quot;session_123456789&quot;,
+    &quot;event_type&quot;: &quot;add_to_cart&quot;,
+    &quot;processed&quot;: true,
+    &quot;synced_to&quot;: { &quot;shopify&quot;: true, &quot;google_ai&quot;: true },
+    &quot;ucp_tags_updated&quot;: [&quot;cart-active&quot;, &quot;high-intent&quot;]
+  },
+  &quot;idempotency_key&quot;: &quot;session_123456789_add_to_cart_1705234500000&quot;
+}
+</code></pre>
+<p><strong>Update UCP Tags (onChange Event):</strong></p>
+<pre><code>PATCH /ucp/session/{session_id}/tags
+Content-Type: application/json
+
+Request:
+{
+  &quot;add_tags&quot;: [&quot;vip-customer&quot;, &quot;loyalty-member&quot;],
+  &quot;remove_tags&quot;: [&quot;first-time-visitor&quot;],
+  &quot;trigger_webhook&quot;: true
+}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;session_id&quot;: &quot;session_123456789&quot;,
+    &quot;ucp_tags&quot;: [&quot;mobile-user&quot;, &quot;organic-traffic&quot;, &quot;vip-customer&quot;, &quot;loyalty-member&quot;, &quot;cart-active&quot;],
+    &quot;tags_added&quot;: [&quot;vip-customer&quot;, &quot;loyalty-member&quot;],
+    &quot;tags_removed&quot;: [&quot;first-time-visitor&quot;],
+    &quot;webhook_triggered&quot;: true,
+    &quot;webhook_status&quot;: &quot;delivered&quot;
+  }
+}
+</code></pre>
+<p><strong>Get Session History:</strong></p>
+<pre><code>GET /ucp/session/{session_id}/history?limit=50
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;session_id&quot;: &quot;session_123456789&quot;,
+    &quot;user_id&quot;: &quot;usr_abc123def456&quot;,
+    &quot;events&quot;: [
+      { &quot;event_id&quot;: &quot;evt_001&quot;, &quot;event_type&quot;: &quot;page_view&quot;, &quot;page&quot;: &quot;/&quot;, &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot; },
+      { &quot;event_id&quot;: &quot;evt_002&quot;, &quot;event_type&quot;: &quot;page_view&quot;, &quot;page&quot;: &quot;/products/premium-widget&quot;, &quot;timestamp&quot;: &quot;2026-01-14T12:02:00Z&quot; },
+      { &quot;event_id&quot;: &quot;evt_003&quot;, &quot;event_type&quot;: &quot;add_to_cart&quot;, &quot;data&quot;: { &quot;product_id&quot;: &quot;prod_abc123&quot;, &quot;quantity&quot;: 1 }, &quot;timestamp&quot;: &quot;2026-01-14T12:05:00Z&quot; }
+    ],
+    &quot;total_events&quot;: 3,
+    &quot;session_duration_seconds&quot;: 300,
+    &quot;pages_viewed&quot;: 2
+  }
+}
+</code></pre>
+<h4>10.4 Idempotency API</h4>
+<p><strong>Base URL:</strong> <code>https://your-middleware.xano.io/api/v1/idempotency</code></p>
+<p><strong>Check Idempotency Key:</strong></p>
+<pre><code>GET /idempotency/{idempotency_key}
+
+Response (200 OK - Key Exists):
+{
+  &quot;exists&quot;: true,
+  &quot;data&quot;: {
+    &quot;idempotency_key&quot;: &quot;usr_abc123_consent_1705237200000&quot;,
+    &quot;operation&quot;: &quot;consent_update&quot;,
+    &quot;status&quot;: &quot;completed&quot;,
+    &quot;result&quot;: { &quot;success&quot;: true, &quot;user_id&quot;: &quot;usr_abc123def456&quot;, &quot;consent_updated&quot;: true },
+    &quot;created_at&quot;: &quot;2026-01-14T15:00:00Z&quot;,
+    &quot;expires_at&quot;: &quot;2026-01-15T15:00:00Z&quot;
+  }
+}
+
+Response (404 Not Found - Key Does Not Exist):
+{
+  &quot;exists&quot;: false,
+  &quot;message&quot;: &quot;Idempotency key not found - safe to process&quot;
+}
+</code></pre>
+<p><strong>Create Idempotency Record:</strong></p>
+<pre><code>POST /idempotency
+Content-Type: application/json
+
+Request:
+{
+  &quot;idempotency_key&quot;: &quot;usr_abc123_consent_1705237200000&quot;,
+  &quot;operation&quot;: &quot;consent_update&quot;,
+  &quot;entity_type&quot;: &quot;user&quot;,
+  &quot;entity_id&quot;: &quot;usr_abc123def456&quot;,
+  &quot;request_hash&quot;: &quot;sha256_of_request_body&quot;,
+  &quot;ttl_hours&quot;: 24
+}
+
+Response (201 Created):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;idempotency_key&quot;: &quot;usr_abc123_consent_1705237200000&quot;,
+    &quot;status&quot;: &quot;processing&quot;,
+    &quot;lock_acquired&quot;: true,
+    &quot;created_at&quot;: &quot;2026-01-14T15:00:00Z&quot;,
+    &quot;expires_at&quot;: &quot;2026-01-15T15:00:00Z&quot;
+  }
+}
+</code></pre>
+<p><strong>Update Idempotency Status:</strong></p>
+<pre><code>PATCH /idempotency/{idempotency_key}
+Content-Type: application/json
+
+Request:
+{
+  &quot;status&quot;: &quot;completed&quot;,
+  &quot;result&quot;: { &quot;success&quot;: true, &quot;user_id&quot;: &quot;usr_abc123def456&quot;, &quot;consent_updated&quot;: true }
+}
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;idempotency_key&quot;: &quot;usr_abc123_consent_1705237200000&quot;,
+    &quot;status&quot;: &quot;completed&quot;,
+    &quot;updated_at&quot;: &quot;2026-01-14T15:00:01Z&quot;
+  }
+}
+</code></pre>
+<p><strong>List Failed Operations (Admin):</strong></p>
+<pre><code>GET /idempotency?status=failed&amp;entity_type=user&amp;limit=100
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: [
+    {
+      &quot;idempotency_key&quot;: &quot;usr_def456_consent_1705230000000&quot;,
+      &quot;operation&quot;: &quot;consent_update&quot;,
+      &quot;entity_type&quot;: &quot;user&quot;,
+      &quot;entity_id&quot;: &quot;usr_def456&quot;,
+      &quot;status&quot;: &quot;failed&quot;,
+      &quot;error_message&quot;: &quot;Shopify API timeout&quot;,
+      &quot;retry_count&quot;: 3,
+      &quot;created_at&quot;: &quot;2026-01-14T13:00:00Z&quot;
+    }
+  ],
+  &quot;pagination&quot;: { &quot;page&quot;: 1, &quot;limit&quot;: 100, &quot;total&quot;: 5 }
+}
+</code></pre>
+<p><strong>Retry Failed Operation:</strong></p>
+<pre><code>POST /idempotency/{idempotency_key}/retry
+
+Response (202 Accepted):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;idempotency_key&quot;: &quot;usr_def456_consent_1705230000000&quot;,
+    &quot;status&quot;: &quot;processing&quot;,
+    &quot;retry_count&quot;: 4,
+    &quot;message&quot;: &quot;Retry initiated&quot;
+  }
+}
+</code></pre>
+<h4>10.5 Webhook Management API</h4>
+<p><strong>Base URL:</strong> <code>https://your-middleware.xano.io/api/v1/webhooks</code></p>
+<p><strong>Register Webhook:</strong></p>
+<pre><code>POST /webhooks
+Content-Type: application/json
+
+Request:
+{
+  &quot;url&quot;: &quot;https://your-endpoint.com/webhook&quot;,
+  &quot;events&quot;: [&quot;user.consent_updated&quot;, &quot;user.tags_changed&quot;, &quot;session.created&quot;],
+  &quot;secret&quot;: &quot;your_webhook_secret&quot;,
+  &quot;active&quot;: true
+}
+
+Response (201 Created):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;webhook_id&quot;: &quot;wh_abc123&quot;,
+    &quot;url&quot;: &quot;https://your-endpoint.com/webhook&quot;,
+    &quot;events&quot;: [&quot;user.consent_updated&quot;, &quot;user.tags_changed&quot;, &quot;session.created&quot;],
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;created_at&quot;: &quot;2026-01-14T12:00:00Z&quot;
+  }
+}
+</code></pre>
+<p><strong>Webhook Delivery Log:</strong></p>
+<pre><code>GET /webhooks/{webhook_id}/deliveries?limit=50
+
+Response (200 OK):
+{
+  &quot;success&quot;: true,
+  &quot;data&quot;: [
+    {
+      &quot;delivery_id&quot;: &quot;del_xyz789&quot;,
+      &quot;webhook_id&quot;: &quot;wh_abc123&quot;,
+      &quot;event&quot;: &quot;user.consent_updated&quot;,
+      &quot;payload&quot;: { &quot;user_id&quot;: &quot;usr_abc123&quot;, &quot;consent_marketing&quot;: true },
+      &quot;status&quot;: &quot;delivered&quot;,
+      &quot;response_code&quot;: 200,
+      &quot;response_time_ms&quot;: 145,
+      &quot;delivered_at&quot;: &quot;2026-01-14T15:00:01Z&quot;
+    }
+  ],
+  &quot;pagination&quot;: { &quot;page&quot;: 1, &quot;limit&quot;: 50, &quot;total&quot;: 250 }
+}
+</code></pre>
+<h3>STEP 11: Testing and Deployment</h3>
 <ol>
 <li>
 <p><strong>Install dependencies:</strong></p>
@@ -981,9 +1715,11 @@ WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
 </ul>
 <h2>SUCCESS CRITERIA</h2>
 <ul>
+<li>[ ] CI/CD pipeline successfully publishes to both 11ty and Shopify Native</li>
 <li>[ ] Build completes in &lt; 30 seconds</li>
 <li>[ ] Page load time &lt; 2 seconds (Lighthouse score &gt; 90)</li>
 <li>[ ] All products display correctly from UCP API</li>
+<li>[ ] 11ty and Shopify Native pages render identically (parity)</li>
 <li>[ ] OAuth 2.0 login flow works end-to-end</li>
 <li>[ ] Payment processing succeeds with valid test cards</li>
 <li>[ ] WebSocket connection remains stable</li>
@@ -991,6 +1727,7 @@ WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
 <li>[ ] Mobile responsive design works on all devices</li>
 <li>[ ] Cross-browser compatibility (Chrome, Firefox, Safari, Edge)</li>
 <li>[ ] Accessibility score &gt; 90 (WCAG 2.1 AA compliant)</li>
+<li>[ ] Webflow design changes propagate to both targets automatically</li>
 </ul>
 <h2>TROUBLESHOOTING</h2>
 <p><strong>Build fails:</strong></p>
@@ -1026,16 +1763,18 @@ WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
 <h2>NEXT STEPS</h2>
 <p>After completing the basic implementation:</p>
 <ol>
-<li><strong>Add product search and filtering</strong></li>
+<li><strong>Enhance CI/CD pipeline with automated design sync</strong></li>
+<li><strong>Add product search and filtering (works on both 11ty and Shopify Native)</strong></li>
 <li><strong>Implement order history page</strong></li>
 <li><strong>Add email notifications</strong></li>
 <li><strong>Integrate analytics dashboard</strong></li>
-<li><strong>Implement A/B testing</strong></li>
+<li><strong>Implement A/B testing across both platforms</strong></li>
 <li><strong>Add multi-language support</strong></li>
 <li><strong>Optimize images and assets</strong></li>
 <li><strong>Implement progressive web app (PWA) features</strong></li>
 <li><strong>Add automated testing (unit, integration, e2e)</strong></li>
-<li><strong>Set up CI/CD pipeline</strong></li>
+<li><strong>Set up parity testing between 11ty and Shopify Native</strong></li>
+<li><strong>Implement automatic failover from 11ty to Shopify Native</strong></li>
 </ol>
 <h2>RESOURCES</h2>
 <ul>
@@ -1082,7 +1821,34 @@ You can customize this prompt by:
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** 2025-01-14  
-**Compatibility:** Eleventy 3.x, Node.js 18+
+**Version:** 2.1.0
+**Last Updated:** 2026-01-14
+**Compatibility:** Eleventy 3.x, Node.js 20+, Shopify Theme API 2024-01
+**Architecture:** Webflow Design Module → CI/CD → 11ty + Shopify Native
+**Includes:** API Endpoint Schema Maps for Users, Products, UCP, Idempotency
 </code></pre>
+
+    </div>
+  </main>
+  
+  <footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-left">
+        <span class="footer-title">Webflow Integration Knowledge Base</span>
+        <span class="footer-separator">·</span>
+        <span>Built with 11ty</span>
+      </div>
+      <div class="footer-right">
+        <span>Version 1.0</span>
+        <span class="footer-separator">·</span>
+        <span>2026</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+  <script src="/js/main.js"></script>
+</body>
+</html>

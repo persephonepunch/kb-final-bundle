@@ -1,10 +1,11 @@
 # Product Requirements Document (PRD)
 ## 11ty + Shopify UCP Catalog + Google AI Integration
 
-**Version:** 1.0  
-**Date:** January 14, 2026  
-**Author:** Manus AI  
+**Version:** 1.1
+**Date:** January 14, 2026
+**Author:** Manus AI
 **Target Audience:** Claude AI, Development Teams
+**Includes:** API Endpoint Schema Maps for Users, Products, UCP, Idempotency, Webhooks
 
 ---
 
@@ -767,6 +768,737 @@ query GetProducts($first: Int!, $after: String) {
 }
 ```
 
+### 6.4 Users API Endpoints
+
+**Base URL:** `https://your-middleware.xano.io/api/v1/users`
+
+#### 6.4.1 Create User
+```
+POST /users
+```
+
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "name": "John Doe",
+  "consent_analytics": true,
+  "consent_marketing": false,
+  "ucp_session_id": "session_123456"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "user_id": "usr_abc123def456",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "shopify_customer_id": "gid://shopify/Customer/789",
+    "consent_status": {
+      "analytics": { "granted": true, "timestamp": "2026-01-14T12:00:00Z" },
+      "marketing": { "granted": false, "timestamp": "2026-01-14T12:00:00Z" }
+    },
+    "created_at": "2026-01-14T12:00:00Z"
+  },
+  "idempotency_key": "usr_abc123def456_create_1705233600000"
+}
+```
+
+#### 6.4.2 Get User
+```
+GET /users/{user_id}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "user_id": "usr_abc123def456",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "shopify_customer_id": "gid://shopify/Customer/789",
+    "consent_status": {
+      "analytics": { "granted": true, "timestamp": "2026-01-14T12:00:00Z" },
+      "marketing": { "granted": false, "timestamp": "2026-01-14T12:00:00Z" }
+    },
+    "ucp_tags": ["returning-customer", "newsletter-subscriber"],
+    "last_event_type": "page_view",
+    "last_event_timestamp": "2026-01-14T14:30:00Z",
+    "sync_status": {
+      "shopify_synced": true,
+      "google_ai_synced": true,
+      "last_synced": "2026-01-14T14:30:00Z"
+    },
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T14:30:00Z"
+  }
+}
+```
+
+#### 6.4.3 Update User Consent
+```
+PATCH /users/{user_id}/consent
+```
+
+**Request:**
+```json
+{
+  "consent_analytics": true,
+  "consent_marketing": true,
+  "consent_version": "v2.1"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "user_id": "usr_abc123def456",
+    "consent_status": {
+      "analytics": { "granted": true, "timestamp": "2026-01-14T15:00:00Z", "version": "v2.1" },
+      "marketing": { "granted": true, "timestamp": "2026-01-14T15:00:00Z", "version": "v2.1" }
+    },
+    "webhook_triggered": true
+  },
+  "idempotency_key": "usr_abc123def456_consent_1705237200000"
+}
+```
+
+#### 6.4.4 List Users (Admin)
+```
+GET /users?page=1&limit=50&filter[consent_marketing]=true
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    { "user_id": "usr_abc123", "email": "user1@example.com", "name": "John Doe" },
+    { "user_id": "usr_def456", "email": "user2@example.com", "name": "Jane Smith" }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 1250,
+    "total_pages": 25
+  }
+}
+```
+
+### 6.5 Products API Endpoints
+
+**Base URL:** `https://your-middleware.xano.io/api/v1/products`
+
+#### 6.5.1 List Products
+```
+GET /products?page=1&limit=20&collection={collection_handle}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "product_id": "prod_abc123",
+      "shopify_id": "gid://shopify/Product/12345",
+      "title": "Premium Widget",
+      "handle": "premium-widget",
+      "description": "A high-quality widget for all your needs",
+      "price": {
+        "amount": "99.99",
+        "currency_code": "USD"
+      },
+      "compare_at_price": {
+        "amount": "129.99",
+        "currency_code": "USD"
+      },
+      "images": [
+        { "url": "https://cdn.shopify.com/...", "alt_text": "Premium Widget" }
+      ],
+      "available": true,
+      "inventory_quantity": 150,
+      "variants_count": 3,
+      "tags": ["featured", "best-seller"],
+      "last_synced": "2026-01-14T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 500,
+    "total_pages": 25,
+    "has_next_page": true,
+    "cursor": "eyJsYXN0X2lkIjogMTIzNDV9"
+  }
+}
+```
+
+#### 6.5.2 Get Product Detail
+```
+GET /products/{product_handle}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "product_id": "prod_abc123",
+    "shopify_id": "gid://shopify/Product/12345",
+    "title": "Premium Widget",
+    "handle": "premium-widget",
+    "description": "A high-quality widget for all your needs",
+    "description_html": "<p>A high-quality widget...</p>",
+    "price_range": {
+      "min": { "amount": "89.99", "currency_code": "USD" },
+      "max": { "amount": "119.99", "currency_code": "USD" }
+    },
+    "images": [
+      { "id": "img_1", "url": "https://cdn.shopify.com/...", "alt_text": "Front view", "position": 1 },
+      { "id": "img_2", "url": "https://cdn.shopify.com/...", "alt_text": "Side view", "position": 2 }
+    ],
+    "variants": [
+      {
+        "variant_id": "var_001",
+        "shopify_id": "gid://shopify/ProductVariant/111",
+        "title": "Small / Blue",
+        "sku": "WIDGET-SM-BLU",
+        "price": { "amount": "89.99", "currency_code": "USD" },
+        "available": true,
+        "inventory_quantity": 50,
+        "options": { "size": "Small", "color": "Blue" }
+      },
+      {
+        "variant_id": "var_002",
+        "shopify_id": "gid://shopify/ProductVariant/222",
+        "title": "Large / Red",
+        "sku": "WIDGET-LG-RED",
+        "price": { "amount": "119.99", "currency_code": "USD" },
+        "available": true,
+        "inventory_quantity": 30,
+        "options": { "size": "Large", "color": "Red" }
+      }
+    ],
+    "collections": ["widgets", "featured"],
+    "tags": ["featured", "best-seller", "new-arrival"],
+    "seo": {
+      "title": "Premium Widget - Best Quality",
+      "description": "Shop our premium widget..."
+    },
+    "created_at": "2025-12-01T10:00:00Z",
+    "updated_at": "2026-01-14T10:00:00Z",
+    "last_synced": "2026-01-14T10:00:00Z"
+  }
+}
+```
+
+#### 6.5.3 Sync Products (Webhook Trigger)
+```
+POST /products/sync
+```
+
+**Request:**
+```json
+{
+  "sync_type": "full",
+  "collection_handles": ["all"],
+  "force_refresh": false
+}
+```
+
+**Response (202 Accepted):**
+```json
+{
+  "success": true,
+  "message": "Product sync initiated",
+  "job_id": "sync_job_123456",
+  "estimated_products": 500,
+  "webhook_url": "https://your-middleware.xano.io/api/v1/products/sync/status/sync_job_123456"
+}
+```
+
+### 6.6 UCP Session API Endpoints
+
+**Base URL:** `https://your-middleware.xano.io/api/v1/ucp`
+
+#### 6.6.1 Create/Update Session
+```
+POST /ucp/session
+```
+
+**Request:**
+```json
+{
+  "session_id": "session_123456789",
+  "user_id": "usr_abc123def456",
+  "device_info": {
+    "type": "mobile",
+    "browser": "Chrome",
+    "os": "iOS 17"
+  },
+  "referrer": "https://google.com",
+  "landing_page": "/products/premium-widget"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "session_id": "session_123456789",
+    "user_id": "usr_abc123def456",
+    "is_new_session": true,
+    "consent_required": true,
+    "ucp_tags": ["mobile-user", "organic-traffic"],
+    "created_at": "2026-01-14T12:00:00Z"
+  }
+}
+```
+
+#### 6.6.2 Track Event
+```
+POST /ucp/event
+```
+
+**Request:**
+```json
+{
+  "session_id": "session_123456789",
+  "event_type": "add_to_cart",
+  "event_data": {
+    "product_id": "prod_abc123",
+    "variant_id": "var_001",
+    "quantity": 1,
+    "price": 89.99
+  },
+  "page": "/products/premium-widget",
+  "timestamp": "2026-01-14T12:05:00Z"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "event_id": "evt_xyz789",
+    "session_id": "session_123456789",
+    "event_type": "add_to_cart",
+    "processed": true,
+    "synced_to": {
+      "shopify": true,
+      "google_ai": true
+    },
+    "ucp_tags_updated": ["cart-active", "high-intent"]
+  },
+  "idempotency_key": "session_123456789_add_to_cart_1705234500000"
+}
+```
+
+#### 6.6.3 Update UCP Tags
+```
+PATCH /ucp/session/{session_id}/tags
+```
+
+**Request:**
+```json
+{
+  "add_tags": ["vip-customer", "loyalty-member"],
+  "remove_tags": ["first-time-visitor"],
+  "trigger_webhook": true
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "session_id": "session_123456789",
+    "ucp_tags": ["mobile-user", "organic-traffic", "vip-customer", "loyalty-member", "cart-active"],
+    "tags_added": ["vip-customer", "loyalty-member"],
+    "tags_removed": ["first-time-visitor"],
+    "webhook_triggered": true,
+    "webhook_status": "delivered"
+  }
+}
+```
+
+#### 6.6.4 Get Session History
+```
+GET /ucp/session/{session_id}/history?limit=50
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "session_id": "session_123456789",
+    "user_id": "usr_abc123def456",
+    "events": [
+      {
+        "event_id": "evt_001",
+        "event_type": "page_view",
+        "page": "/",
+        "timestamp": "2026-01-14T12:00:00Z"
+      },
+      {
+        "event_id": "evt_002",
+        "event_type": "page_view",
+        "page": "/products/premium-widget",
+        "timestamp": "2026-01-14T12:02:00Z"
+      },
+      {
+        "event_id": "evt_003",
+        "event_type": "add_to_cart",
+        "data": { "product_id": "prod_abc123", "quantity": 1 },
+        "timestamp": "2026-01-14T12:05:00Z"
+      }
+    ],
+    "total_events": 3,
+    "session_duration_seconds": 300,
+    "pages_viewed": 2
+  }
+}
+```
+
+### 6.7 Idempotency API Endpoints
+
+**Base URL:** `https://your-middleware.xano.io/api/v1/idempotency`
+
+#### 6.7.1 Check Idempotency Key
+```
+GET /idempotency/{idempotency_key}
+```
+
+**Response (200 OK - Key Exists):**
+```json
+{
+  "exists": true,
+  "data": {
+    "idempotency_key": "usr_abc123_consent_1705237200000",
+    "operation": "consent_update",
+    "status": "completed",
+    "result": {
+      "success": true,
+      "user_id": "usr_abc123def456",
+      "consent_updated": true
+    },
+    "created_at": "2026-01-14T15:00:00Z",
+    "expires_at": "2026-01-15T15:00:00Z"
+  }
+}
+```
+
+**Response (404 Not Found - Key Does Not Exist):**
+```json
+{
+  "exists": false,
+  "message": "Idempotency key not found - safe to process"
+}
+```
+
+#### 6.7.2 Create Idempotency Record
+```
+POST /idempotency
+```
+
+**Request:**
+```json
+{
+  "idempotency_key": "usr_abc123_consent_1705237200000",
+  "operation": "consent_update",
+  "entity_type": "user",
+  "entity_id": "usr_abc123def456",
+  "request_hash": "sha256_of_request_body",
+  "ttl_hours": 24
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "idempotency_key": "usr_abc123_consent_1705237200000",
+    "status": "processing",
+    "lock_acquired": true,
+    "created_at": "2026-01-14T15:00:00Z",
+    "expires_at": "2026-01-15T15:00:00Z"
+  }
+}
+```
+
+#### 6.7.3 Update Idempotency Status
+```
+PATCH /idempotency/{idempotency_key}
+```
+
+**Request:**
+```json
+{
+  "status": "completed",
+  "result": {
+    "success": true,
+    "user_id": "usr_abc123def456",
+    "consent_updated": true
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "idempotency_key": "usr_abc123_consent_1705237200000",
+    "status": "completed",
+    "updated_at": "2026-01-14T15:00:01Z"
+  }
+}
+```
+
+#### 6.7.4 List Idempotency Records (Admin)
+```
+GET /idempotency?status=failed&entity_type=user&limit=100
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "idempotency_key": "usr_def456_consent_1705230000000",
+      "operation": "consent_update",
+      "entity_type": "user",
+      "entity_id": "usr_def456",
+      "status": "failed",
+      "error_message": "Shopify API timeout",
+      "retry_count": 3,
+      "created_at": "2026-01-14T13:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 100,
+    "total": 5
+  }
+}
+```
+
+#### 6.7.5 Retry Failed Operations
+```
+POST /idempotency/{idempotency_key}/retry
+```
+
+**Response (202 Accepted):**
+```json
+{
+  "success": true,
+  "data": {
+    "idempotency_key": "usr_def456_consent_1705230000000",
+    "status": "processing",
+    "retry_count": 4,
+    "message": "Retry initiated"
+  }
+}
+```
+
+### 6.8 Webhook Management API
+
+**Base URL:** `https://your-middleware.xano.io/api/v1/webhooks`
+
+### 6.9 Environment Variables (.env) Reference
+
+```bash
+# =============================================================================
+# ENVIRONMENT CONFIGURATION - .env.example
+# =============================================================================
+# Copy this file to .env and fill in your actual values
+# NEVER commit .env to version control
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SHOPIFY STOREFRONT API (Public - for 11ty build)
+# -----------------------------------------------------------------------------
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+SHOPIFY_STOREFRONT_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SHOPIFY_STOREFRONT_API_VERSION=2024-01
+
+# -----------------------------------------------------------------------------
+# SHOPIFY ADMIN API (Private - for middleware/backend only)
+# -----------------------------------------------------------------------------
+SHOPIFY_ADMIN_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SHOPIFY_THEME_ID=123456789012
+
+# -----------------------------------------------------------------------------
+# WEBFLOW API (Design Module Export)
+# -----------------------------------------------------------------------------
+WEBFLOW_API_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+WEBFLOW_SITE_ID=xxxxxxxxxxxxxxxxxxxxxxxx
+WEBFLOW_COLLECTION_ID=xxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# XANO MIDDLEWARE
+# -----------------------------------------------------------------------------
+XANO_API_BASE_URL=https://your-instance.xano.io/api
+XANO_API_KEY=xano_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+XANO_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# AUTHENTICATION (OAuth 2.0)
+# -----------------------------------------------------------------------------
+OAUTH_CLIENT_ID=your-oauth-client-id
+OAUTH_CLIENT_SECRET=your-oauth-client-secret
+OAUTH_AUTHORIZE_URL=https://identity-provider.example.com/authorize
+OAUTH_TOKEN_URL=https://identity-provider.example.com/token
+OAUTH_REDIRECT_URI=https://your-site.com/callback
+
+# -----------------------------------------------------------------------------
+# JWT CONFIGURATION
+# -----------------------------------------------------------------------------
+JWT_SECRET=your-256-bit-secret-key-here-minimum-32-chars
+JWT_ISSUER=your-app-name
+JWT_AUDIENCE=your-api-audience
+JWT_EXPIRY_HOURS=24
+
+# -----------------------------------------------------------------------------
+# GOOGLE AI / ANALYTICS
+# -----------------------------------------------------------------------------
+GOOGLE_AI_PROJECT_ID=your-gcp-project-id
+GOOGLE_AI_STREAM_ID=your-datastream-id
+GOOGLE_AI_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+GOOGLE_AI_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"..."}
+
+# -----------------------------------------------------------------------------
+# WEBSOCKET / REAL-TIME
+# -----------------------------------------------------------------------------
+WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
+WEBSOCKET_API_KEY=ws_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# PAYMENT GATEWAY (A2P)
+# -----------------------------------------------------------------------------
+PAYMENT_GATEWAY_URL=https://payment-gateway.example.com
+PAYMENT_MERCHANT_ID=merch_xxxxxxxxxxxxx
+PAYMENT_PUBLIC_KEY=pk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+PAYMENT_SECRET_KEY=sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# DEPLOYMENT / CI-CD
+# -----------------------------------------------------------------------------
+NETLIFY_AUTH_TOKEN=nfp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NETLIFY_SITE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# -----------------------------------------------------------------------------
+# IDEMPOTENCY / CACHING
+# -----------------------------------------------------------------------------
+REDIS_URL=redis://username:password@host:6379
+IDEMPOTENCY_TTL_HOURS=24
+CACHE_TTL_SECONDS=3600
+
+# -----------------------------------------------------------------------------
+# SECURITY
+# -----------------------------------------------------------------------------
+WEBHOOK_SIGNING_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ENCRYPTION_KEY=32-character-encryption-key-here
+HMAC_SECRET=your-hmac-signing-secret
+
+# -----------------------------------------------------------------------------
+# FEATURE FLAGS
+# -----------------------------------------------------------------------------
+ENABLE_GOOGLE_AI_STREAMING=true
+ENABLE_SHOPIFY_SYNC=true
+ENABLE_WEBHOOK_RETRY=true
+DEBUG_MODE=false
+
+# -----------------------------------------------------------------------------
+# RATE LIMITING
+# -----------------------------------------------------------------------------
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+RATE_LIMIT_BURST=20
+```
+
+#### 6.8.1 Register Webhook
+```
+POST /webhooks
+```
+
+**Request:**
+```json
+{
+  "url": "https://your-endpoint.com/webhook",
+  "events": ["user.consent_updated", "user.tags_changed", "session.created"],
+  "secret": "your_webhook_secret",
+  "active": true
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "webhook_id": "wh_abc123",
+    "url": "https://your-endpoint.com/webhook",
+    "events": ["user.consent_updated", "user.tags_changed", "session.created"],
+    "status": "active",
+    "created_at": "2026-01-14T12:00:00Z"
+  }
+}
+```
+
+#### 6.8.2 Webhook Delivery Log
+```
+GET /webhooks/{webhook_id}/deliveries?limit=50
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "delivery_id": "del_xyz789",
+      "webhook_id": "wh_abc123",
+      "event": "user.consent_updated",
+      "payload": { "user_id": "usr_abc123", "consent_marketing": true },
+      "status": "delivered",
+      "response_code": 200,
+      "response_time_ms": 145,
+      "delivered_at": "2026-01-14T15:00:01Z"
+    },
+    {
+      "delivery_id": "del_xyz790",
+      "webhook_id": "wh_abc123",
+      "event": "session.created",
+      "payload": { "session_id": "session_123456789" },
+      "status": "failed",
+      "response_code": 500,
+      "error_message": "Internal server error",
+      "retry_count": 2,
+      "next_retry_at": "2026-01-14T15:10:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 250
+  }
+}
+```
+
 ---
 
 ## 7. User Stories
@@ -927,6 +1659,7 @@ query GetProducts($first: Int!, $after: String) {
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-14 | Manus AI | Initial PRD creation |
+| 1.1 | 2026-01-14 | Manus AI | Added API Endpoint Schema Maps (Users, Products, UCP, Idempotency, Webhooks) |
 
 ---
 
