@@ -1663,6 +1663,220 @@ Response (200 OK):
 }
 ```
 
+#### 10.6 User Session State Management
+
+**User GraphQL Query (Shopify Admin API):**
+```graphql
+query GetCustomer($id: ID!) {
+  customer(id: $id) {
+    id
+    email
+    firstName
+    lastName
+    displayName
+    tags
+    verifiedEmail
+
+    emailMarketingConsent {
+      marketingState
+      marketingOptInLevel
+      consentUpdatedAt
+    }
+
+    orders(first: 10, sortKey: CREATED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          name
+          createdAt
+          totalPriceSet { shopMoney { amount, currencyCode } }
+          fulfillmentStatus
+        }
+      }
+    }
+
+    metafields(first: 20, namespace: "ucp") {
+      edges {
+        node { id, namespace, key, value, type }
+      }
+    }
+  }
+}
+```
+
+**Update Customer with UCP Data (Mutation):**
+```graphql
+mutation UpdateCustomerWithUCP($input: CustomerInput!) {
+  customerUpdate(input: $input) {
+    customer {
+      id
+      email
+      tags
+      metafields(first: 20, namespace: "ucp") {
+        edges { node { key, value } }
+      }
+    }
+    userErrors { field, message }
+  }
+}
+```
+
+**User Schema Mapper (scripts/user-schema-mapper.js):**
+```javascript
+function generateIdempotencyKey(userId, eventType) {
+  return `${userId}_${eventType}_${Date.now()}`;
+}
+
+function mapUserToWebflow(userData, sessionData, consentData) {
+  const { userId, email, name, shopifyCustomerId } = userData;
+  const { sessionId, deviceInfo, events = [] } = sessionData || {};
+  const { analytics = false, marketing = false, version = 'v1.0', timestamp } = consentData || {};
+
+  return {
+    name: name || email?.split('@')[0] || 'Anonymous',
+    slug: userId,
+    'user-id': userId,
+    'email': email || '',
+    'shopify-customer-id': shopifyCustomerId || '',
+    'consent-status': JSON.stringify({
+      analytics: { granted: analytics, timestamp: timestamp || new Date().toISOString() },
+      marketing: { granted: marketing, timestamp: timestamp || new Date().toISOString() }
+    }),
+    'consent-analytics': analytics,
+    'consent-marketing': marketing,
+    'consent-timestamp': timestamp || new Date().toISOString(),
+    'consent-version': version,
+    'ucp-session-id': sessionId || '',
+    'ucp-tags': JSON.stringify(generateUserTags(userData, sessionData, consentData)),
+    'last-event-type': events[events.length - 1]?.type || 'session_start',
+    'last-event-timestamp': events[events.length - 1]?.timestamp || new Date().toISOString(),
+    'event-history': JSON.stringify(events.slice(-50)),
+    'idempotency-key': generateIdempotencyKey(userId, 'user_sync'),
+    'last-processed-at': new Date().toISOString(),
+    'processing-status': 'completed',
+    'shopify-synced': !!shopifyCustomerId,
+    'google-ai-synced': true,
+    'last-synced': new Date().toISOString(),
+  };
+}
+
+function generateUserTags(userData, sessionData, consentData) {
+  const tags = [];
+  if (sessionData?.deviceInfo?.type === 'mobile') tags.push('mobile-user');
+  if (sessionData?.deviceInfo?.type === 'desktop') tags.push('desktop-user');
+  if (consentData?.analytics) tags.push('analytics-consent');
+  if (consentData?.marketing) tags.push('marketing-consent');
+  if ((sessionData?.events?.length || 0) > 10) tags.push('high-engagement');
+  if (sessionData?.events?.some(e => e.type === 'add_to_cart')) tags.push('cart-active');
+  return tags;
+}
+
+function mapConsentUpdate(userId, consentData) {
+  return {
+    'consent-analytics': consentData.analytics,
+    'consent-marketing': consentData.marketing,
+    'consent-timestamp': new Date().toISOString(),
+    'consent-version': consentData.version || 'v1.0',
+    'idempotency-key': generateIdempotencyKey(userId, 'consent_update'),
+    'last-processed-at': new Date().toISOString(),
+  };
+}
+
+module.exports = { mapUserToWebflow, mapConsentUpdate, generateIdempotencyKey, generateUserTags };
+```
+
+**User Data Fetcher (src/_data/users.js):**
+```javascript
+const fetch = require('node-fetch');
+require('dotenv').config();
+
+const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
+const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+const ADMIN_ENDPOINT = `https://${SHOPIFY_DOMAIN}/admin/api/2024-01/graphql.json`;
+
+async function adminQuery(query, variables = {}) {
+  const response = await fetch(ADMIN_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': ADMIN_TOKEN,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await response.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  return json.data;
+}
+
+async function fetchCustomerWithUCP(customerId) {
+  const query = `
+    query GetCustomerUCP($id: ID!) {
+      customer(id: $id) {
+        id, email, firstName, lastName, tags
+        emailMarketingConsent { marketingState, consentUpdatedAt }
+        metafields(first: 20, namespace: "ucp") {
+          edges { node { key, value, type } }
+        }
+      }
+    }
+  `;
+  const data = await adminQuery(query, { id: customerId });
+  return parseCustomerData(data.customer);
+}
+
+function parseCustomerData(customer) {
+  const metafields = {};
+  customer.metafields?.edges?.forEach(({ node }) => {
+    metafields[node.key] = node.type === 'json' ? JSON.parse(node.value) : node.value;
+  });
+  return {
+    userId: customer.id,
+    email: customer.email,
+    name: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+    tags: customer.tags || [],
+    consent: {
+      marketing: customer.emailMarketingConsent?.marketingState === 'SUBSCRIBED',
+      timestamp: customer.emailMarketingConsent?.consentUpdatedAt,
+    },
+    ucp: {
+      sessionId: metafields.session_id || null,
+      consentStatus: metafields.consent_status || {},
+      lastEvent: metafields.last_event || null,
+      userTags: metafields.user_tags || [],
+    },
+  };
+}
+
+async function updateCustomerUCP(customerId, ucpData) {
+  const mutation = `
+    mutation UpdateCustomerUCP($input: CustomerInput!) {
+      customerUpdate(input: $input) {
+        customer { id, tags }
+        userErrors { field, message }
+      }
+    }
+  `;
+  const input = {
+    id: customerId,
+    tags: ucpData.tags || [],
+    metafields: [
+      { namespace: 'ucp', key: 'consent_status', value: JSON.stringify(ucpData.consent || {}), type: 'json' },
+      { namespace: 'ucp', key: 'session_id', value: ucpData.sessionId || '', type: 'single_line_text_field' },
+      { namespace: 'ucp', key: 'last_event', value: JSON.stringify(ucpData.lastEvent || {}), type: 'json' },
+      { namespace: 'ucp', key: 'user_tags', value: JSON.stringify(ucpData.userTags || []), type: 'json' },
+      { namespace: 'ucp', key: 'idempotency_key', value: `${customerId}_${Date.now()}`, type: 'single_line_text_field' },
+    ],
+  };
+  const data = await adminQuery(mutation, { input });
+  if (data.customerUpdate.userErrors?.length > 0) {
+    throw new Error(JSON.stringify(data.customerUpdate.userErrors));
+  }
+  return data.customerUpdate.customer;
+}
+
+module.exports = { fetchCustomerWithUCP, updateCustomerUCP, parseCustomerData, adminQuery };
+```
+
 ### STEP 11: Testing and Deployment
 
 1. **Install dependencies:**

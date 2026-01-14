@@ -305,8 +305,16 @@ ul, ol {
 
 .nav-mobile {
   display: none;
-  padding: var(--space-md) 0;
+  position: absolute;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  background-color: var(--color-white);
   border-top: 2px solid var(--color-grey-200);
+  border-bottom: 2px solid var(--color-grey-200);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  padding: var(--space-md);
 }
 
 .nav-mobile.active {
