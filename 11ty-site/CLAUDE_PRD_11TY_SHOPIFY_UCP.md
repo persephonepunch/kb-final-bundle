@@ -10,7 +10,12 @@
 
 ## Executive Summary
 
-This PRD defines the requirements for building a complete e-commerce knowledge base and product catalog system using Eleventy (11ty) as the static site generator, Shopify's Universal Commerce Protocol (UCP) Catalog as the product data source, and Google AI for real-time analytics and personalization. The system integrates with Webflow for front-end presentation and uses Xano/n8n for middleware orchestration.
+This PRD defines the requirements for building a complete e-commerce knowledge base and product catalog system using Eleventy (11ty) as the static site generator, Shopify's Universal Commerce Protocol (UCP) Catalog as the product data source, and Google AI for real-time analytics and personalization.
+
+**Architecture Overview:**
+- **Webflow** serves as a **Design Module only** - a visual design tool for creating component layouts
+- **CI/CD Pipeline** publishes Webflow design components to both **11ty templates** and **Shopify Native** (mirrored front end)
+- **Xano/n8n** provides middleware orchestration for runtime data flows
 
 ---
 
@@ -50,13 +55,33 @@ Build a static site generator pipeline that:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     BUILD TIME (11ty)                           │
+│                   DESIGN TIME (Webflow Design Module)           │
 │                                                                 │
-│  ┌──────────────┐      GraphQL      ┌──────────────────────┐  │
-│  │   11ty       │ ─────────────────> │  Shopify UCP         │  │
-│  │   Build      │ <───────────────── │  Catalog API         │  │
-│  │   Process    │      Products      │  (GraphQL)           │  │
-│  └──────────────┘                    └──────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │  Webflow Design Module                                   │ │
+│  │  - Visual component design (layouts, typography)         │ │
+│  │  - No runtime logic - design assets only                 │ │
+│  │  - Exportable design tokens and structure                │ │
+│  └──────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              │ CI/CD Design Component Publish
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     BUILD TIME (Dual Target)                    │
+│                                                                 │
+│  ┌────────────────────────┐      ┌────────────────────────┐   │
+│  │   11ty Templates       │      │   Shopify Native       │   │
+│  │   + GraphQL Mapping    │      │   (Mirror Front End)   │   │
+│  └────────────────────────┘      └────────────────────────┘   │
+│            │                               │                    │
+│            │                               │                    │
+│            ▼                               ▼                    │
+│  ┌──────────────┐  GraphQL   ┌──────────────────────┐         │
+│  │   11ty       │ ─────────> │  Shopify UCP         │         │
+│  │   Build      │ <───────── │  Catalog API         │         │
+│  │   Process    │  Products  │  (GraphQL)           │         │
+│  └──────────────┘            └──────────────────────┘         │
 │         │                                                       │
 │         │ Generate Static HTML                                 │
 │         ▼                                                       │
@@ -125,6 +150,15 @@ Build a static site generator pipeline that:
 ```
 
 ### 2.2 Component Responsibilities
+
+#### 2.2.0 Webflow Design Module
+- **Purpose:** Visual design tool for creating component layouts (Design Time only)
+- **Responsibilities:**
+  - Create visual component designs (layouts, typography, spacing, colors)
+  - Define design tokens (CSS variables, spacing units)
+  - Export design structure for CI/CD pipeline
+- **NOT responsible for:** Runtime logic, data fetching, user interactions
+- **Output:** Design components exported via CI/CD to 11ty and Shopify Native
 
 #### 2.2.1 11ty Build Process
 - **Input:** Shopify UCP Catalog GraphQL API
@@ -390,41 +424,74 @@ permalink: "/products/{{ product.handle }}/"
 - [ ] Batch events (send every 10 events or 30 seconds)
 - [ ] Handle API errors (queue for retry)
 
-### 3.4 Webflow Integration Requirements
+### 3.4 CI/CD Design Publish Pipeline Requirements
 
-#### FR-13: CSS Integration
+#### FR-13: Webflow Design Module Export
 **Priority:** P0 (Critical)
 
-**Description:** Integrate BEM CSS into Webflow custom code.
+**Description:** Export Webflow design components for CI/CD pipeline processing.
 
 **Acceptance Criteria:**
-- [ ] CSS copied to Webflow Project Settings → Custom Code → Head
-- [ ] Wrapped in `<style>` tags
-- [ ] Google Fonts link included
-- [ ] CSS variables preserved
-- [ ] No conflicts with Webflow's default styles
+- [ ] Webflow project configured for design export (Dev Link or API)
+- [ ] Design tokens extracted (CSS variables, spacing, colors)
+- [ ] Component structure exported as HTML/CSS templates
+- [ ] No runtime logic included in exports
+- [ ] Version control integration for design changes
 
-#### FR-14: JavaScript Integration
+#### FR-14: CI/CD Dual-Target Publish
 **Priority:** P0 (Critical)
 
-**Description:** Integrate vanilla JavaScript into Webflow custom code.
+**Description:** CI/CD pipeline publishes Webflow designs to both 11ty and Shopify Native.
 
 **Acceptance Criteria:**
-- [ ] JavaScript copied to Webflow Project Settings → Custom Code → Footer
-- [ ] Wrapped in `<script>` tags
-- [ ] All functionality works (mobile menu, tabs, copy buttons)
-- [ ] No conflicts with Webflow's scripts
+- [ ] GitHub Actions workflow for design publish pipeline
+- [ ] Transform Webflow exports to 11ty Nunjucks templates
+- [ ] Transform Webflow exports to Shopify Liquid templates
+- [ ] Sync CSS/design tokens to both targets
+- [ ] Automated build trigger on design changes
+- [ ] Rollback capability for failed deployments
 
-#### FR-15: Component Mapping
-**Priority:** P1 (High)
+**Implementation Details:**
+```yaml
+# .github/workflows/design-publish.yml
+name: Design Component Publish
 
-**Description:** Map HTML structure to Webflow components.
+on:
+  repository_dispatch:
+    types: [webflow-design-update]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export Webflow Design
+        # Extract design components from Webflow
+
+      - name: Transform to 11ty Templates
+        # Convert to Nunjucks templates
+
+      - name: Transform to Shopify Native
+        # Convert to Liquid templates for Shopify theme
+
+      - name: Deploy 11ty Site
+        # Build and deploy static site
+
+      - name: Sync Shopify Theme
+        # Push templates to Shopify Native
+```
+
+#### FR-15: Shopify Native Mirror Sync
+**Priority:** P0 (Critical)
+
+**Description:** Maintain Shopify Native as a mirror of the synced front end.
 
 **Acceptance Criteria:**
-- [ ] Create Webflow symbols for reusable components (header, footer, card)
-- [ ] Apply correct class names from BEM CSS
-- [ ] Test all interactive elements
-- [ ] Document component usage in Webflow
+- [ ] Shopify theme templates match 11ty output structure
+- [ ] Product pages render identically on both platforms
+- [ ] Shared CSS/design tokens between 11ty and Shopify
+- [ ] GraphQL data mapping consistent across both targets
+- [ ] Fallback to Shopify Native if 11ty site unavailable
 
 ---
 
@@ -732,46 +799,53 @@ query GetProducts($first: Int!, $after: String) {
 
 ## 8. Implementation Phases
 
-### Phase 1: Foundation (Week 1)
+### Phase 1: Webflow Design Module Setup
+- [ ] Configure Webflow project for design exports
+- [ ] Create component library (header, footer, cards, layouts)
+- [ ] Define design tokens (CSS variables, typography, spacing)
+- [ ] Set up Webflow Dev Link or API access
+- [ ] Document design system conventions
+
+### Phase 2: CI/CD Pipeline Foundation
+- [ ] Set up GitHub repository structure
+- [ ] Create design export scripts
+- [ ] Build template transformation layer (Webflow → 11ty/Shopify)
+- [ ] Configure GitHub Actions workflow
+- [ ] Test automated design publish
+
+### Phase 3: 11ty Build System
 - [ ] Set up 11ty project structure
 - [ ] Create GraphQL client module
-- [ ] Implement product data fetching
-- [ ] Create base templates (layout, header, footer)
-- [ ] Implement BEM CSS
+- [ ] Implement product data fetching with pagination
+- [ ] Integrate transformed Webflow templates
+- [ ] Implement BEM CSS from design tokens
 
-### Phase 2: Page Generation (Week 2)
-- [ ] Implement pagination for product pages
-- [ ] Add SEO metadata
-- [ ] Add structured data (JSON-LD)
-- [ ] Optimize images
-- [ ] Test build performance
+### Phase 4: Shopify Native Mirror
+- [ ] Set up Shopify theme structure
+- [ ] Transform Webflow exports to Liquid templates
+- [ ] Sync CSS/design tokens to Shopify theme
+- [ ] Configure GraphQL data mapping
+- [ ] Test product page parity with 11ty
 
-### Phase 3: Client-Side Functionality (Week 3)
+### Phase 5: Client-Side Functionality
 - [ ] Implement UCP Session Manager
 - [ ] Create consent management UI
 - [ ] Implement event tracking
 - [ ] Add WebSocket client
-- [ ] Test in multiple browsers
+- [ ] Test across both 11ty and Shopify Native
 
-### Phase 4: Middleware Integration (Week 4)
+### Phase 6: Middleware Integration
 - [ ] Set up Xano/n8n webhook endpoint
 - [ ] Implement data transformation
 - [ ] Add idempotency checks
 - [ ] Integrate with Shopify Metaobjects
 - [ ] Integrate with Google AI
 
-### Phase 5: Webflow Integration (Week 5)
-- [ ] Copy CSS to Webflow custom code
-- [ ] Copy JavaScript to Webflow custom code
-- [ ] Create Webflow components
-- [ ] Test all functionality in Webflow
-- [ ] Document integration process
-
-### Phase 6: Testing & Launch (Week 6)
+### Phase 7: Testing & Launch
 - [ ] Performance testing (Lighthouse, WebPageTest)
 - [ ] Security testing (OWASP Top 10)
+- [ ] Parity testing (11ty vs Shopify Native)
 - [ ] User acceptance testing
-- [ ] Fix bugs and optimize
 - [ ] Deploy to production
 
 ---
@@ -861,48 +935,90 @@ query GetProducts($first: Int!, $after: String) {
 **Use this prompt with Claude to implement the system:**
 
 ```
-I need you to build a complete e-commerce knowledge base system with the following components:
+I need you to build a complete e-commerce knowledge base system with the following architecture:
 
-1. **11ty Static Site Generator:**
+## ARCHITECTURE OVERVIEW
+- **Webflow** = Design Module only (visual design tool, no runtime)
+- **CI/CD Pipeline** = Publishes Webflow designs to dual targets
+- **11ty** = Static site with GraphQL data mapping from Shopify
+- **Shopify Native** = Mirror of synced front end
+
+## COMPONENTS TO BUILD
+
+1. **Webflow Design Module Export:**
+   - Design tokens extraction (CSS variables, typography, spacing)
+   - Component structure export
+   - No runtime logic - design assets only
+
+2. **CI/CD Design Publish Pipeline:**
+   - GitHub Actions workflow for automated publish
+   - Transform Webflow exports to 11ty Nunjucks templates
+   - Transform Webflow exports to Shopify Liquid templates
+   - Sync CSS/design tokens to both targets
+
+3. **11ty Static Site Generator:**
    - Fetch product data from Shopify UCP Catalog via GraphQL
-   - Generate static HTML pages for each product using pagination
-   - Use BEM CSS methodology (no Tailwind)
+   - Generate static HTML pages using transformed Webflow templates
+   - Use BEM CSS from design tokens
    - Include vanilla JavaScript (no frameworks)
-   - IBM Plex fonts for typography
 
-2. **Client-Side UCP Session Manager:**
+4. **Shopify Native Mirror:**
+   - Liquid templates matching 11ty output structure
+   - Shared CSS/design tokens
+   - Product page parity with 11ty
+   - Fallback capability
+
+5. **Client-Side UCP Session Manager:**
    - Track user sessions in sessionStorage
    - Capture user events (page views, clicks)
    - Manage consent preferences
-   - Send webhooks to middleware
+   - Works on both 11ty and Shopify Native
 
-3. **Middleware (Xano/n8n):**
+6. **Middleware (Xano/n8n):**
    - Webhook endpoint to receive client events
    - Transform data for Shopify and Google AI
    - Implement idempotency checks
    - Sync to Shopify Metaobjects
    - Stream to Google AI Data Stream
 
-4. **Webflow Integration:**
-   - CSS and JS that can be copied into Webflow custom code
-   - HTML structure that maps to Webflow components
-   - Full integration guide
+## DATA FLOW
 
-Please follow the PRD specifications exactly, including:
-- All functional requirements (FR-1 through FR-15)
-- Non-functional requirements (performance, security, scalability)
-- Data models and API specifications
-- BEM CSS naming conventions
-- Vanilla JavaScript (no jQuery or other libraries)
+```
+Webflow Design Module (Design Time)
+         │
+         │ CI/CD Design Component Publish
+         ▼
+┌────────────────────┬────────────────────┐
+│  11ty Templates    │  Shopify Native    │
+│  + GraphQL Mapping │  (Mirror)          │
+└────────────────────┴────────────────────┘
+         │                    │
+         └────────┬───────────┘
+                  │
+         Shopify GraphQL API
+                  │
+                  ▼
+         Runtime (Xano/n8n → Google AI)
+```
 
-Deliverables:
-1. Complete 11ty project with source code
-2. Built static site ready for deployment
-3. Integration guide for Webflow and Shopify
-4. README with setup instructions
-5. All code should be production-ready with error handling
+## DELIVERABLES
 
-Start by setting up the 11ty project structure, then implement each component following the implementation phases outlined in the PRD.
+1. CI/CD pipeline configuration (GitHub Actions)
+2. Webflow export transformation scripts
+3. Complete 11ty project with source code
+4. Shopify theme templates (Liquid)
+5. Built static site ready for deployment
+6. README with setup instructions
+7. All code should be production-ready with error handling
+
+Follow the implementation phases:
+1. Webflow Design Module Setup
+2. CI/CD Pipeline Foundation
+3. 11ty Build System
+4. Shopify Native Mirror
+5. Client-Side Functionality
+6. Middleware Integration
+7. Testing & Launch
 ```
 
 ---

@@ -140,20 +140,31 @@
       <div class="docs__section">
         <h2>Document Overview</h2>
         <p>This Product Requirements Document provides comprehensive specifications for implementing an Eleventy (11ty) static site generator with Shopify Universal Commerce Protocol (UCP) and Google AI integration. The document is specifically designed for Claude (or other LLMs) to implement the complete system.</p>
+
+        <div class="callout callout--warning" style="margin-top: 1rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+          <h3 style="margin: 0 0 0.5rem 0;">Architecture Note</h3>
+          <p style="margin: 0;"><strong>Webflow</strong> = Design Module only (visual design tool, no runtime)<br>
+          <strong>CI/CD Pipeline</strong> = Publishes Webflow designs to dual targets<br>
+          <strong>11ty</strong> = Static site with GraphQL data mapping<br>
+          <strong>Shopify Native</strong> = Mirror of synced front end</p>
+        </div>
       </div>
 
       <div class="docs__section">
         <h2>Executive Summary</h2>
         <div class="callout callout--info">
           <h3>Project Goal</h3>
-          <p>Build a static e-commerce site using 11ty that fetches product data from Shopify's UCP Catalog API, implements OAuth 2.0 identity linking, processes payments via A2P (Agent Payments Protocol), and streams real-time data to Google AI for analytics and personalization.</p>
+          <p>Build a dual-target e-commerce system where Webflow serves as a Design Module only. A CI/CD pipeline publishes design components to both 11ty (static site with GraphQL data mapping) and Shopify Native (mirrored front end). The system implements OAuth 2.0 identity linking, A2P payment processing, and streams real-time data to Google AI for analytics and personalization.</p>
         </div>
       </div>
 
       <div class="docs__section">
         <h2>Key Features</h2>
         <ul>
-          <li><strong>Static Site Generation:</strong> 11ty-based architecture for optimal performance</li>
+          <li><strong>Webflow Design Module:</strong> Visual design only, no runtime logic</li>
+          <li><strong>CI/CD Design Publish:</strong> Automated pipeline to 11ty + Shopify Native</li>
+          <li><strong>Static Site Generation:</strong> 11ty-based architecture with GraphQL data mapping</li>
+          <li><strong>Shopify Native Mirror:</strong> Synchronized front end for fallback/parity</li>
           <li><strong>UCP Catalog Integration:</strong> Fetch products from Shopify's global catalog</li>
           <li><strong>OAuth 2.0 Identity:</strong> Secure user authentication and session management</li>
           <li><strong>A2P Payment Processing:</strong> Cryptographic payment mandates</li>
@@ -168,25 +179,34 @@
           <div class="code-block__header">
             <span class="code-block__language">yaml</span>
           </div>
-          <pre class="code-block__content"><code>Frontend:
-  - Eleventy (11ty) v3.x
-  - Nunjucks templates
+          <pre class="code-block__content"><code>Design Layer:
+  - Webflow Design Module (design-time only)
+  - Design tokens export
+  - Component structure export
+
+CI/CD Pipeline:
+  - GitHub Actions workflow
+  - Webflow → 11ty template transformation
+  - Webflow → Shopify Liquid transformation
+
+Frontend (Dual Target):
+  - Eleventy (11ty) v3.x + Nunjucks
+  - Shopify Native + Liquid templates
   - Vanilla JavaScript (ES6+)
-  - CSS3 (BEM methodology)
+  - CSS3 (BEM from design tokens)
 
 Backend Services:
-  - Shopify UCP Catalog API
+  - Shopify UCP Catalog API (GraphQL)
   - OAuth 2.0 Identity Provider
   - A2P Payment Gateway
   - Google AI Data Stream API
 
 Middleware:
-  - Xano (optional)
-  - n8n (optional)
+  - Xano/n8n for runtime processing
   - WebSocket server
 
 Data Flow:
-  - REST APIs (Shopify UCP)
+  - GraphQL (Shopify UCP)
   - WebSocket (real-time streaming)
   - Server-Sent Events (notifications)</code></pre>
         </div>
@@ -195,40 +215,40 @@ Data Flow:
       <div class="docs__section">
         <h2>Implementation Phases</h2>
         
-        <h3>Phase 1: 11ty Setup & UCP Integration</h3>
+        <h3>Phase 1: Webflow Design Module Setup</h3>
         <ol>
-          <li>Initialize 11ty project with proper directory structure</li>
-          <li>Configure data files to fetch from Shopify UCP Catalog API</li>
-          <li>Create product listing and detail page templates</li>
-          <li>Implement JWT authentication for API requests</li>
+          <li>Configure Webflow project for design exports</li>
+          <li>Create component library (header, footer, cards, layouts)</li>
+          <li>Define design tokens (CSS variables, typography, spacing)</li>
+          <li>Set up Webflow Dev Link or API access</li>
+          <li>Document design system conventions</li>
+        </ol>
+
+        <h3>Phase 2: CI/CD Pipeline Foundation</h3>
+        <ol>
+          <li>Set up GitHub repository structure</li>
+          <li>Create design export scripts</li>
+          <li>Build template transformation (Webflow → 11ty/Shopify)</li>
+          <li>Configure GitHub Actions workflow</li>
+          <li>Test automated design publish</li>
+        </ol>
+
+        <h3>Phase 3: 11ty + Shopify Native Setup</h3>
+        <ol>
+          <li>Initialize 11ty with transformed Webflow templates</li>
+          <li>Configure Shopify theme with Liquid templates</li>
+          <li>Implement GraphQL data fetching for both targets</li>
+          <li>Test parity between 11ty and Shopify Native</li>
           <li>Add error handling and fallback content</li>
         </ol>
 
-        <h3>Phase 2: OAuth 2.0 Identity Linking</h3>
+        <h3>Phase 4: Runtime Integration</h3>
         <ol>
-          <li>Implement OAuth 2.0 authorization code flow</li>
-          <li>Create login/logout UI components</li>
-          <li>Store session tokens securely (httpOnly cookies)</li>
-          <li>Add session validation middleware</li>
-          <li>Implement token refresh logic</li>
-        </ol>
-
-        <h3>Phase 3: A2P Payment Integration</h3>
-        <ol>
-          <li>Generate cryptographic payment mandates</li>
-          <li>Create checkout flow with A2P protocol</li>
-          <li>Implement idempotency checks</li>
-          <li>Add payment confirmation UI</li>
-          <li>Handle payment webhooks</li>
-        </ol>
-
-        <h3>Phase 4: Google AI Data Streaming</h3>
-        <ol>
-          <li>Set up WebSocket connection to Google AI</li>
+          <li>Implement OAuth 2.0 (works on both targets)</li>
+          <li>Set up A2P payment processing</li>
+          <li>Configure WebSocket to Google AI</li>
           <li>Implement consent management UI</li>
-          <li>Stream user behavior events (pageviews, clicks, purchases)</li>
-          <li>Add real-time personalization based on AI responses</li>
-          <li>Implement data retention policies</li>
+          <li>Add real-time personalization</li>
         </ol>
       </div>
 

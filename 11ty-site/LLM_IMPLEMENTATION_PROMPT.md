@@ -4,33 +4,221 @@
 
 This document provides a complete, step-by-step implementation prompt for Large Language Models (Claude, GPT-4, etc.) to build an Eleventy (11ty) static site with Shopify Universal Commerce Protocol (UCP) integration, OAuth 2.0 authentication, A2P payment processing, and Google AI data streaming.
 
+**Architecture:**
+- **Webflow** = Design Module only (visual design tool, no runtime responsibility)
+- **CI/CD Pipeline** = Publishes Webflow design components to dual targets
+- **11ty** = Static site templates with GraphQL data mapping from Shopify
+- **Shopify Native** = Mirror of synced front end (fallback and parity)
+
 ---
 
 ## Prompt for LLM
 
 ```
-You are tasked with building a complete e-commerce static site using Eleventy (11ty) that integrates with modern commerce protocols and AI services. Follow these instructions carefully to implement each component.
+You are tasked with building a complete e-commerce static site system with the following architecture:
+
+- **Webflow** serves as a Design Module only - for visual component design
+- **CI/CD Pipeline** publishes Webflow designs to both 11ty and Shopify Native
+- **11ty** generates static pages with GraphQL data from Shopify
+- **Shopify Native** mirrors the front end for fallback/parity
+
+Follow these instructions carefully to implement each component.
 
 ## PROJECT REQUIREMENTS
 
-Build a static e-commerce site with the following features:
+Build a dual-target e-commerce system with the following features:
 
-1. **Static Site Generation**: Use Eleventy (11ty) v3.x with Nunjucks templates
-2. **Product Catalog**: Fetch products from Shopify's Universal Commerce Protocol (UCP) Catalog API
-3. **User Authentication**: Implement OAuth 2.0 with PKCE for secure login
-4. **Payment Processing**: Use Agent Payments Protocol (A2P) for cryptographic payment mandates
-5. **Real-time Data**: Stream user behavior to Google AI via WebSocket
-6. **Consent Management**: GDPR-compliant user consent tracking
-7. **Responsive Design**: Mobile-first CSS with BEM methodology
+1. **Webflow Design Module**: Visual design only, no runtime logic
+2. **CI/CD Design Publish Pipeline**: Transforms Webflow exports to 11ty + Shopify Native
+3. **Static Site Generation**: Use Eleventy (11ty) v3.x with Nunjucks templates
+4. **Shopify Native Mirror**: Liquid templates matching 11ty output
+5. **Product Catalog**: Fetch products from Shopify's UCP Catalog API via GraphQL
+6. **User Authentication**: Implement OAuth 2.0 with PKCE for secure login
+7. **Payment Processing**: Use Agent Payments Protocol (A2P) for cryptographic payment mandates
+8. **Real-time Data**: Stream user behavior to Google AI via WebSocket
+9. **Consent Management**: GDPR-compliant user consent tracking
 
 ## TECHNICAL STACK
 
-- **Frontend**: Eleventy 11ty, Nunjucks, Vanilla JavaScript (ES6+), CSS3
-- **APIs**: Shopify UCP Catalog REST API, OAuth 2.0, A2P Payment Gateway, Google AI Data Stream
-- **Data Flow**: REST APIs, WebSocket, Server-Sent Events
+- **Design**: Webflow Design Module (design-time only)
+- **CI/CD**: GitHub Actions, design transformation scripts
+- **Frontend**: Eleventy 11ty, Nunjucks, Shopify Liquid, Vanilla JavaScript (ES6+), CSS3
+- **APIs**: Shopify UCP Catalog GraphQL API, OAuth 2.0, A2P Payment Gateway, Google AI Data Stream
+- **Data Flow**: GraphQL, REST APIs, WebSocket, Server-Sent Events
 - **Security**: JWT tokens, TLS 1.3, PKCE, PCI DSS compliance
 
 ## IMPLEMENTATION STEPS
+
+### STEP 0: CI/CD Design Publish Pipeline
+
+Set up the GitHub Actions workflow that publishes Webflow design components to both 11ty and Shopify Native.
+
+**Create `.github/workflows/design-publish.yml`:**
+```yaml
+name: Design Component Publish
+
+on:
+  repository_dispatch:
+    types: [webflow-design-update]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target to publish (all, 11ty, shopify)'
+        default: 'all'
+
+jobs:
+  export-design:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Export Webflow Design Tokens
+        run: node scripts/export-webflow-design.js
+        env:
+          WEBFLOW_API_TOKEN: ${{ secrets.WEBFLOW_API_TOKEN }}
+          WEBFLOW_SITE_ID: ${{ secrets.WEBFLOW_SITE_ID }}
+
+      - name: Transform to 11ty Templates
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == '11ty'
+        run: node scripts/transform-to-nunjucks.js
+
+      - name: Transform to Shopify Liquid
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == 'shopify'
+        run: node scripts/transform-to-liquid.js
+
+      - name: Build 11ty Site
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == '11ty'
+        run: npm run build
+
+      - name: Deploy to Netlify
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == '11ty'
+        run: netlify deploy --prod --dir=_site
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Sync to Shopify Theme
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == 'shopify'
+        run: node scripts/sync-shopify-theme.js
+        env:
+          SHOPIFY_STORE_DOMAIN: ${{ secrets.SHOPIFY_STORE_DOMAIN }}
+          SHOPIFY_ADMIN_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ADMIN_ACCESS_TOKEN }}
+          SHOPIFY_THEME_ID: ${{ secrets.SHOPIFY_THEME_ID }}
+```
+
+**Create `scripts/export-webflow-design.js`:**
+```javascript
+/**
+ * Export Webflow design tokens and component structure
+ * This extracts CSS variables, typography, and component HTML
+ */
+const fs = require('fs').promises;
+
+async function exportWebflowDesign() {
+  // Extract design tokens from Webflow
+  const designTokens = {
+    colors: {
+      primary: '#000000',
+      accent: '#dc2626',
+      text: '#1f2937',
+      background: '#ffffff',
+      border: '#e5e7eb',
+    },
+    typography: {
+      fontFamily: "'IBM Plex Sans', sans-serif",
+      fontSizes: {
+        xs: '0.75rem',
+        sm: '0.875rem',
+        base: '1rem',
+        lg: '1.125rem',
+        xl: '1.25rem',
+        '2xl': '1.5rem',
+        '3xl': '1.875rem',
+      },
+    },
+    spacing: {
+      unit: '8px',
+      xs: '4px',
+      sm: '8px',
+      md: '16px',
+      lg: '24px',
+      xl: '32px',
+    },
+  };
+
+  // Write design tokens for both targets
+  await fs.writeFile(
+    'src/_data/designTokens.json',
+    JSON.stringify(designTokens, null, 2)
+  );
+
+  console.log('Design tokens exported successfully');
+}
+
+exportWebflowDesign();
+```
+
+**Create `scripts/transform-to-liquid.js`:**
+```javascript
+/**
+ * Transform 11ty Nunjucks templates to Shopify Liquid
+ * Maintains parity between 11ty and Shopify Native
+ */
+const fs = require('fs').promises;
+const path = require('path');
+
+const nunjucksToLiquid = {
+  '{% include': '{% include',
+  '{% for ': '{% for ',
+  '{% endfor %}': '{% endfor %}',
+  '{% if ': '{% if ',
+  '{% endif %}': '{% endif %}',
+  '{{ ': '{{ ',
+  ' }}': ' }}',
+  '.njk': '.liquid',
+};
+
+async function transformToLiquid() {
+  const templatesDir = 'src/_includes';
+  const outputDir = 'shopify-theme/snippets';
+
+  await fs.mkdir(outputDir, { recursive: true });
+
+  // Transform component templates
+  const components = await fs.readdir(path.join(templatesDir, 'components'));
+
+  for (const file of components) {
+    if (file.endsWith('.njk')) {
+      let content = await fs.readFile(
+        path.join(templatesDir, 'components', file),
+        'utf-8'
+      );
+
+      // Basic Nunjucks to Liquid conversion
+      // Note: Complex logic may need manual adjustment
+      content = content
+        .replace(/\{\% include "components\//g, '{% include "')
+        .replace(/\.njk" \%\}/g, '" %}');
+
+      const liquidFile = file.replace('.njk', '.liquid');
+      await fs.writeFile(path.join(outputDir, liquidFile), content);
+      console.log(`Transformed: ${file} → ${liquidFile}`);
+    }
+  }
+
+  console.log('Shopify Liquid templates generated');
+}
+
+transformToLiquid();
+```
 
 ### STEP 1: Initialize 11ty Project
 
@@ -919,9 +1107,11 @@ WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
 
 ## SUCCESS CRITERIA
 
+- [ ] CI/CD pipeline successfully publishes to both 11ty and Shopify Native
 - [ ] Build completes in < 30 seconds
 - [ ] Page load time < 2 seconds (Lighthouse score > 90)
 - [ ] All products display correctly from UCP API
+- [ ] 11ty and Shopify Native pages render identically (parity)
 - [ ] OAuth 2.0 login flow works end-to-end
 - [ ] Payment processing succeeds with valid test cards
 - [ ] WebSocket connection remains stable
@@ -929,6 +1119,7 @@ WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
 - [ ] Mobile responsive design works on all devices
 - [ ] Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
 - [ ] Accessibility score > 90 (WCAG 2.1 AA compliant)
+- [ ] Webflow design changes propagate to both targets automatically
 
 ## TROUBLESHOOTING
 
@@ -961,16 +1152,18 @@ WEBSOCKET_SERVER_URL=wss://your-websocket-server.com
 
 After completing the basic implementation:
 
-1. **Add product search and filtering**
-2. **Implement order history page**
-3. **Add email notifications**
-4. **Integrate analytics dashboard**
-5. **Implement A/B testing**
-6. **Add multi-language support**
-7. **Optimize images and assets**
-8. **Implement progressive web app (PWA) features**
-9. **Add automated testing (unit, integration, e2e)**
-10. **Set up CI/CD pipeline**
+1. **Enhance CI/CD pipeline with automated design sync**
+2. **Add product search and filtering (works on both 11ty and Shopify Native)**
+3. **Implement order history page**
+4. **Add email notifications**
+5. **Integrate analytics dashboard**
+6. **Implement A/B testing across both platforms**
+7. **Add multi-language support**
+8. **Optimize images and assets**
+9. **Implement progressive web app (PWA) features**
+10. **Add automated testing (unit, integration, e2e)**
+11. **Set up parity testing between 11ty and Shopify Native**
+12. **Implement automatic failover from 11ty to Shopify Native**
 
 ## RESOURCES
 
@@ -1019,6 +1212,7 @@ You can customize this prompt by:
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** 2025-01-14  
-**Compatibility:** Eleventy 3.x, Node.js 18+
+**Version:** 2.0.0
+**Last Updated:** 2026-01-14
+**Compatibility:** Eleventy 3.x, Node.js 20+, Shopify Theme API 2024-01
+**Architecture:** Webflow Design Module → CI/CD → 11ty + Shopify Native
