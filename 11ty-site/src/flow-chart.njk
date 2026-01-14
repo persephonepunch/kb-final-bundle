@@ -1,0 +1,542 @@
+---
+layout: layouts/base.njk
+title: "System Flow Chart"
+description: "ASCII flow charts for 11ty + Shopify + Google UCP integration"
+---
+
+<main class="docs">
+  <div class="docs__container">
+    <aside class="docs__sidebar">
+      <nav class="docs__nav">
+        <a href="/" class="docs__nav-link">Overview</a>
+        <a href="/architecture/" class="docs__nav-link">Architecture</a>
+        <a href="/implementation/" class="docs__nav-link">Implementation</a>
+        <a href="/eleventy-graphql/" class="docs__nav-link">11ty GraphQL</a>
+        <a href="/prd/" class="docs__nav-link">Claude PRD</a>
+        <a href="/flow-chart/" class="docs__nav-link docs__nav-link--active">Flow Chart</a>
+      </nav>
+    </aside>
+
+    <article class="docs__content">
+      <header class="docs__header">
+        <h1 class="docs__title">System Flow Charts</h1>
+        <p class="docs__subtitle">Visual diagrams of the complete integration architecture</p>
+        <div class="docs__actions">
+          <a href="/ASCII_FLOW_CHART.md" download class="btn btn--primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download Charts
+          </a>
+        </div>
+      </header>
+
+      <div class="docs__section">
+        <h2>Complete System Architecture</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="complete-architecture">Copy</button>
+          </div>
+          <pre class="code-block__content" id="complete-architecture"><code>┌─────────────────────────────────────────────────────────────────────────────┐
+│                           COMPLETE SYSTEM ARCHITECTURE                       │
+│                    11ty + Shopify UCP + Google AI Integration                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────┐
+│   User Browser   │
+│                  │
+│  ┌────────────┐  │
+│  │ 11ty Site  │  │
+│  │ (Static)   │  │
+│  └────────────┘  │
+│         │        │
+└─────────┼────────┘
+          │
+          ├─────────────────┬──────────────────┬─────────────────┐
+          │                 │                  │                 │
+          ▼                 ▼                  ▼                 ▼
+┌──────────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│  Shopify UCP     │ │   OAuth 2.0  │ │  A2P Payment │ │  Google AI   │
+│  Catalog API     │ │   Identity   │ │   Gateway    │ │  Data Stream │
+│                  │ │   Provider   │ │              │ │              │
+│ ┌──────────────┐ │ │              │ │              │ │              │
+│ │  Products    │ │ │ ┌──────────┐ │ │ ┌──────────┐ │ │ ┌──────────┐ │
+│ │  Variants    │ │ │ │ Login    │ │ │ │ Mandate  │ │ │ │ Analytics│ │
+│ │  Inventory   │ │ │ │ Sessions │ │ │ │ Verify   │ │ │ │ ML Model │ │
+│ └──────────────┘ │ │ │ Tokens   │ │ │ │ Process  │ │ │ │ Personalize│
+│                  │ │ └──────────┘ │ │ └──────────┘ │ │ └──────────┘ │
+└──────────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
+          │                 │                  │                 │
+          └─────────────────┴──────────────────┴─────────────────┘
+                                    │
+                                    ▼
+                          ┌──────────────────┐
+                          │  Middleware      │
+                          │  (Xano/n8n)      │
+                          │                  │
+                          │ ┌──────────────┐ │
+                          │ │ Data Sync    │ │
+                          │ │ Webhooks     │ │
+                          │ │ Transform    │ │
+                          │ └──────────────┘ │
+                          └──────────────────┘
+                                    │
+                          ┌─────────┴─────────┐
+                          ▼                   ▼
+                  ┌──────────────┐    ┌──────────────┐
+                  │   Database   │    │  WebSocket   │
+                  │              │    │   Server     │
+                  │ ┌──────────┐ │    │              │
+                  │ │ Users    │ │    │ ┌──────────┐ │
+                  │ │ Orders   │ │    │ │ Real-time│ │
+                  │ │ Sessions │ │    │ │ Events   │ │
+                  │ │ Consent  │ │    │ │ Streaming│ │
+                  │ └──────────┘ │    │ └──────────┘ │
+                  └──────────────┘    └──────────────┘</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Build-Time Data Flow (11ty)</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="build-time-flow">Copy</button>
+          </div>
+          <pre class="code-block__content" id="build-time-flow"><code>┌─────────────────────────────────────────────────────────────────┐
+│                    11TY BUILD-TIME DATA FLOW                     │
+└─────────────────────────────────────────────────────────────────┘
+
+START BUILD
+    │
+    ▼
+┌─────────────────────────┐
+│  .eleventy.js           │
+│  (Configuration)        │
+└─────────────────────────┘
+    │
+    ▼
+┌─────────────────────────┐
+│  src/_data/             │
+│                         │
+│  ┌───────────────────┐  │
+│  │ ucpClient.js      │  │  ← JWT Authentication
+│  │ (API Client)      │  │
+│  └───────────────────┘  │
+│           │             │
+│           ▼             │
+│  ┌───────────────────┐  │
+│  │ products.js       │  │  ← Fetch Products
+│  │ (Data File)       │  │
+│  └───────────────────┘  │
+└─────────────────────────┘
+    │
+    │ [Product Data Array]
+    │
+    ▼
+┌─────────────────────────┐
+│  src/index.njk          │  ← Product Listing
+│  src/product.njk        │  ← Product Details
+│  (Templates)            │
+└─────────────────────────┘
+    │
+    │ [Rendered HTML]
+    │
+    ▼
+┌─────────────────────────┐
+│  _site/                 │
+│                         │
+│  ├── index.html         │
+│  ├── products/          │
+│  │   ├── product-1.html │
+│  │   ├── product-2.html │
+│  │   └── ...            │
+│  ├── css/               │
+│  └── js/                │
+└─────────────────────────┘
+    │
+    ▼
+DEPLOY TO CDN</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Runtime User Flow</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="runtime-flow">Copy</button>
+          </div>
+          <pre class="code-block__content" id="runtime-flow"><code>┌─────────────────────────────────────────────────────────────────┐
+│                      RUNTIME USER FLOW                           │
+└─────────────────────────────────────────────────────────────────┘
+
+USER VISITS SITE
+    │
+    ▼
+┌─────────────────────────┐
+│  Load Static HTML       │
+│  (from CDN)             │
+└─────────────────────────┘
+    │
+    ▼
+┌─────────────────────────┐
+│  Initialize JavaScript  │
+│  - Session Manager      │
+│  - Consent Manager      │
+│  - WebSocket Client     │
+└─────────────────────────┘
+    │
+    ├─── Not Logged In ───┐
+    │                     │
+    │                     ▼
+    │            ┌─────────────────────────┐
+    │            │  Show Login Button      │
+    │            └─────────────────────────┘
+    │                     │
+    │                     │ [User Clicks Login]
+    │                     │
+    │                     ▼
+    │            ┌─────────────────────────┐
+    │            │  OAuth 2.0 Flow         │
+    │            │  1. Redirect to IdP     │
+    │            │  2. User Authenticates  │
+    │            │  3. Callback with Code  │
+    │            │  4. Exchange for Token  │
+    │            └─────────────────────────┘
+    │                     │
+    │                     ▼
+    │            ┌─────────────────────────┐
+    │            │  Store Session Token    │
+    │            │  (httpOnly Cookie)      │
+    │            └─────────────────────────┘
+    │                     │
+    └─────────────────────┘
+              │
+              ▼
+┌─────────────────────────┐
+│  User Logged In         │
+│  - Show User Profile    │
+│  - Enable Cart          │
+│  - Track Behavior       │
+└─────────────────────────┘
+              │
+              ├─── Browse Products ───┐
+              │                       │
+              │                       ▼
+              │              ┌─────────────────────────┐
+              │              │  View Product Details   │
+              │              │  - Images               │
+              │              │  - Price                │
+              │              │  - Add to Cart          │
+              │              └─────────────────────────┘
+              │                       │
+              │                       │ [Add to Cart]
+              │                       │
+              │                       ▼
+              │              ┌─────────────────────────┐
+              │              │  Update Cart State      │
+              │              │  (localStorage)         │
+              │              └─────────────────────────┘
+              │                       │
+              │                       │ [Proceed to Checkout]
+              │                       │
+              │                       ▼
+              │              ┌─────────────────────────┐
+              │              │  Checkout Flow          │
+              │              │  1. Review Cart         │
+              │              │  2. Shipping Info       │
+              │              │  3. Payment Method      │
+              │              └─────────────────────────┘
+              │                       │
+              │                       ▼
+              │              ┌─────────────────────────┐
+              │              │  A2P Payment Mandate    │
+              │              │  1. Generate Mandate    │
+              │              │  2. Sign with Key       │
+              │              │  3. Submit to Gateway   │
+              │              └─────────────────────────┘
+              │                       │
+              │                       ▼
+              │              ┌─────────────────────────┐
+              │              │  Payment Processing     │
+              │              │  - Verify Signature     │
+              │              │  - Charge Payment       │
+              │              │  - Create Order         │
+              │              └─────────────────────────┘
+              │                       │
+              │                       ▼
+              │              ┌─────────────────────────┐
+              │              │  Order Confirmation     │
+              │              │  - Thank You Page       │
+              │              │  - Email Receipt        │
+              │              └─────────────────────────┘
+              │
+              └─── Throughout Session ───┐
+                                        │
+                                        ▼
+                              ┌─────────────────────────┐
+                              │  Data Streaming         │
+                              │  (If Consent Given)     │
+                              │                         │
+                              │  WebSocket → Google AI  │
+                              │  - Page Views           │
+                              │  - Product Views        │
+                              │  - Cart Actions         │
+                              │  - Purchases            │
+                              └─────────────────────────┘
+                                        │
+                                        ▼
+                              ┌─────────────────────────┐
+                              │  AI Personalization     │
+                              │  - Product Recommendations │
+                              │  - Dynamic Pricing      │
+                              │  - Content Adaptation   │
+                              └─────────────────────────┘</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>OAuth 2.0 Authentication Flow</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="oauth-flow">Copy</button>
+          </div>
+          <pre class="code-block__content" id="oauth-flow"><code>┌─────────────────────────────────────────────────────────────────┐
+│                  OAUTH 2.0 AUTHENTICATION FLOW                   │
+│                    (Authorization Code + PKCE)                   │
+└─────────────────────────────────────────────────────────────────┘
+
+┌──────────┐                                      ┌──────────────┐
+│  Client  │                                      │   Identity   │
+│ (11ty)   │                                      │   Provider   │
+└──────────┘                                      └──────────────┘
+     │                                                    │
+     │ 1. User clicks "Login"                            │
+     │                                                    │
+     │ 2. Generate code_verifier & code_challenge        │
+     │    (PKCE)                                          │
+     │                                                    │
+     │ 3. Redirect to Authorization Endpoint             │
+     │────────────────────────────────────────────────────>
+     │    GET /authorize?                                 │
+     │      response_type=code                            │
+     │      client_id=xxx                                 │
+     │      redirect_uri=xxx                              │
+     │      scope=openid profile email                    │
+     │      code_challenge=xxx                            │
+     │      code_challenge_method=S256                    │
+     │                                                    │
+     │                                4. Show Login Form  │
+     │                                                    │
+     │                                5. User Authenticates
+     │                                                    │
+     │ 6. Redirect back with authorization code          │
+     │<────────────────────────────────────────────────────
+     │    GET /callback?code=AUTH_CODE                    │
+     │                                                    │
+     │ 7. Exchange code for tokens                        │
+     │────────────────────────────────────────────────────>
+     │    POST /token                                     │
+     │      grant_type=authorization_code                 │
+     │      code=AUTH_CODE                                │
+     │      redirect_uri=xxx                              │
+     │      client_id=xxx                                 │
+     │      code_verifier=xxx                             │
+     │                                                    │
+     │                                8. Validate Request │
+     │                                9. Verify PKCE      │
+     │                                                    │
+     │ 10. Receive tokens                                 │
+     │<────────────────────────────────────────────────────
+     │    {                                               │
+     │      "access_token": "...",                        │
+     │      "id_token": "...",                            │
+     │      "refresh_token": "...",                       │
+     │      "expires_in": 3600                            │
+     │    }                                               │
+     │                                                    │
+     │ 11. Store tokens securely                          │
+     │     (httpOnly cookie)                              │
+     │                                                    │
+     │ 12. Decode id_token for user info                  │
+     │                                                    │
+     │ 13. User is logged in                              │
+     │                                                    │
+     │                                                    │
+     │ [Later: Token Expires]                             │
+     │                                                    │
+     │ 14. Use refresh_token to get new access_token      │
+     │────────────────────────────────────────────────────>
+     │    POST /token                                     │
+     │      grant_type=refresh_token                      │
+     │      refresh_token=xxx                             │
+     │      client_id=xxx                                 │
+     │                                                    │
+     │ 15. Receive new tokens                             │
+     │<────────────────────────────────────────────────────
+     │                                                    │</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>A2P Payment Flow</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="a2p-flow">Copy</button>
+          </div>
+          <pre class="code-block__content" id="a2p-flow"><code>┌─────────────────────────────────────────────────────────────────┐
+│                      A2P PAYMENT FLOW                            │
+│              (Agent Payments Protocol - Cryptographic)           │
+└─────────────────────────────────────────────────────────────────┘
+
+┌──────────┐                                      ┌──────────────┐
+│  Client  │                                      │   Payment    │
+│ (11ty)   │                                      │   Gateway    │
+└──────────┘                                      └──────────────┘
+     │                                                    │
+     │ 1. User completes checkout                        │
+     │                                                    │
+     │ 2. Generate payment mandate                       │
+     │    {                                               │
+     │      "mandate_id": "uuid",                         │
+     │      "amount": 99.99,                              │
+     │      "currency": "USD",                            │
+     │      "merchant_id": "...",                         │
+     │      "timestamp": "...",                           │
+     │      "nonce": "random"                             │
+     │    }                                               │
+     │                                                    │
+     │ 3. Sign mandate with private key                  │
+     │    signature = sign(mandate, private_key)         │
+     │                                                    │
+     │ 4. Submit signed mandate                           │
+     │────────────────────────────────────────────────────>
+     │    POST /payments/mandate                          │
+     │    {                                               │
+     │      "mandate": {...},                             │
+     │      "signature": "...",                           │
+     │      "public_key": "..."                           │
+     │    }                                               │
+     │                                                    │
+     │                                5. Verify Signature │
+     │                                   verify(mandate,  │
+     │                                          signature,│
+     │                                          public_key)
+     │                                                    │
+     │                                6. Check Idempotency│
+     │                                   (mandate_id)     │
+     │                                                    │
+     │                                7. Validate Amount  │
+     │                                   & Merchant       │
+     │                                                    │
+     │                                8. Process Payment  │
+     │                                   (Charge Card)    │
+     │                                                    │
+     │ 9. Payment confirmation                            │
+     │<────────────────────────────────────────────────────
+     │    {                                               │
+     │      "status": "success",                          │
+     │      "transaction_id": "...",                      │
+     │      "mandate_id": "...",                          │
+     │      "timestamp": "..."                            │
+     │    }                                               │
+     │                                                    │
+     │ 10. Create order in database                       │
+     │                                                    │
+     │ 11. Show confirmation to user                      │
+     │                                                    │
+     │ 12. Send receipt email                             │
+     │                                                    │</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>WebSocket Data Streaming</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="websocket-flow">Copy</button>
+          </div>
+          <pre class="code-block__content" id="websocket-flow"><code>┌─────────────────────────────────────────────────────────────────┐
+│                  WEBSOCKET DATA STREAMING FLOW                   │
+│                    (Real-time to Google AI)                      │
+└─────────────────────────────────────────────────────────────────┘
+
+┌──────────┐         ┌──────────────┐         ┌──────────────┐
+│  Client  │         │  WebSocket   │         │  Google AI   │
+│ (11ty)   │         │   Server     │         │  Data Stream │
+└──────────┘         └──────────────┘         └──────────────┘
+     │                      │                         │
+     │ 1. User gives consent│                         │
+     │                      │                         │
+     │ 2. Establish WS connection                     │
+     │──────────────────────>                         │
+     │    ws://server/stream?                         │
+     │      token=xxx                                 │
+     │                      │                         │
+     │                      │ 3. Validate token       │
+     │                      │                         │
+     │ 4. Connection established                      │
+     │<──────────────────────                         │
+     │                      │                         │
+     │ 5. Send events       │                         │
+     │──────────────────────>                         │
+     │    {                 │                         │
+     │      "event": "pageview",                      │
+     │      "page": "/products/123",                  │
+     │      "timestamp": "...",                       │
+     │      "user_id": "..."│                         │
+     │    }                 │                         │
+     │                      │                         │
+     │                      │ 6. Forward to Google AI │
+     │                      │─────────────────────────>
+     │                      │    POST /ingest         │
+     │                      │    {                    │
+     │                      │      "events": [...]    │
+     │                      │    }                    │
+     │                      │                         │
+     │                      │ 7. AI processes data    │
+     │                      │                         │
+     │                      │ 8. Send recommendations │
+     │                      │<─────────────────────────
+     │                      │    {                    │
+     │                      │      "recommendations": [...]
+     │                      │    }                    │
+     │                      │                         │
+     │ 9. Receive recommendations                     │
+     │<──────────────────────                         │
+     │    {                 │                         │
+     │      "type": "recommendation",                 │
+     │      "products": [...],                        │
+     │      "confidence": 0.95                        │
+     │    }                 │                         │
+     │                      │                         │
+     │ 10. Update UI with personalized content        │
+     │                      │                         │
+     │                      │                         │
+     │ [Continuous streaming throughout session]      │
+     │                      │                         │</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Download Complete Flow Charts</h2>
+        <p>Download the complete ASCII flow chart document with all diagrams and detailed annotations.</p>
+        <a href="/ASCII_FLOW_CHART.md" download class="btn btn--primary btn--large">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download All Charts (Markdown)
+        </a>
+      </div>
+    </article>
+  </div>
+</main>

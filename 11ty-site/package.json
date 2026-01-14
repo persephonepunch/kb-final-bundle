@@ -1,0 +1,16 @@
+{
+  "name": "webflow-integration-kb-11ty",
+  "version": "1.0.0",
+  "description": "Webflow Integration Knowledge Base - 11ty Static Site",
+  "scripts": {
+    "start": "eleventy --serve",
+    "build": "eleventy",
+    "clean": "rm -rf _site"
+  },
+  "keywords": ["11ty", "webflow", "shopify", "knowledge-base"],
+  "author": "Manus AI",
+  "license": "ISC",
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1"
+  }
+}

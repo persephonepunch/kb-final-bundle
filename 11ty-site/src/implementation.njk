@@ -1,0 +1,352 @@
+---
+layout: layouts/base.njk
+title: Implementation
+permalink: /implementation/
+---
+
+<div class="page-content">
+  <div class="page-header">
+    <h1 class="page-title">Implementation Examples</h1>
+    <p class="page-description">
+      Practical code examples and implementation patterns for integrating Webflow with Shopify and Google AI.
+    </p>
+  </div>
+
+  <div class="tabs-container">
+    <div class="tabs-nav">
+      <button class="tab-button active" data-tab="client">Client-Side</button>
+      <button class="tab-button" data-tab="middleware">Middleware</button>
+      <button class="tab-button" data-tab="shopify">Shopify</button>
+      <button class="tab-button" data-tab="security">Security</button>
+    </div>
+
+    <div class="tabs-content">
+      <!-- Client-Side Tab -->
+      <div class="tab-panel active" id="tab-client">
+        <div class="code-section">
+          <h2 class="code-section-title">UCP Session Manager</h2>
+          <p class="code-section-description">
+            This JavaScript module manages the UCP session on the client-side, including session creation, data storage, and retrieval.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript</span>
+              <button class="copy-button" data-copy="ucp-session">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-ucp-session"><code>class UCPSessionManager {
+  constructor() {
+    this.sessionId = this.getOrCreateSessionId();
+    this.sessionData = this.loadSession();
+    this.webhookUrl = 'https://your-xano.xano.io/api/webhook';
+  }
+
+  getOrCreateSessionId() {
+    let sessionId = sessionStorage.getItem('ucp_session_id');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('ucp_session_id', sessionId);
+    }
+    return sessionId;
+  }
+
+  trackEvent(eventType, eventData = {}) {
+    const event = {
+      timestamp: new Date().toISOString(),
+      type: eventType,
+      data: eventData,
+      page: window.location.pathname
+    };
+    this.sessionData.userHistory.push(event);
+    this.saveSession();
+    this.sendWebhook('event_tracked', event);
+  }
+
+  updateConsent(purpose, granted) {
+    this.sessionData.consentStatus[purpose] = {
+      granted: granted,
+      timestamp: new Date().toISOString()
+    };
+    this.saveSession();
+    this.sendWebhook('consent_updated', { purpose, granted });
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Consent Management UI</h2>
+          <p class="code-section-description">
+            Build a consent management interface in Webflow using vanilla JavaScript.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">HTML + JavaScript</span>
+              <button class="copy-button" data-copy="consent-ui">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-consent-ui"><code>&lt;div class="consent-banner" id="consentBanner"&gt;
+  &lt;h3&gt;Cookie & Data Consent&lt;/h3&gt;
+  &lt;div class="consent-options"&gt;
+    &lt;label&gt;
+      &lt;input type="checkbox" id="analyticsConsent" /&gt;
+      Analytics & Performance
+    &lt;/label&gt;
+    &lt;label&gt;
+      &lt;input type="checkbox" id="marketingConsent" /&gt;
+      Marketing & Personalization
+    &lt;/label&gt;
+  &lt;/div&gt;
+  &lt;button onclick="saveConsent()"&gt;Save Preferences&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+function saveConsent() {
+  const analytics = document.getElementById('analyticsConsent').checked;
+  const marketing = document.getElementById('marketingConsent').checked;
+  
+  window.ucpSession.updateConsent('analytics', analytics);
+  window.ucpSession.updateConsent('marketing', marketing);
+  
+  document.getElementById('consentBanner').style.display = 'none';
+}
+&lt;/script&gt;</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middleware Tab -->
+      <div class="tab-panel" id="tab-middleware">
+        <div class="code-section">
+          <h2 class="code-section-title">Xano Webhook Endpoint</h2>
+          <p class="code-section-description">
+            Set up a webhook endpoint in Xano to receive data from Webflow.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">Xano Function Stack</span>
+              <button class="copy-button" data-copy="xano-webhook">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-xano-webhook"><code>// Xano Function Stack Pseudo-code
+const payload = $input.body;
+const eventType = payload.eventType;
+const session = payload.session;
+
+// Validate
+if (!session.sessionId || !eventType) {
+  return { success: false, error: 'Missing fields' };
+}
+
+// Transform Data
+const customerData = {
+  email: session.email,
+  tags: ['ucp-user', `session-${session.sessionId}`]
+};
+
+// Shopify Sync
+const customer = await shopify_find_or_create_customer(customerData);
+await shopify_update_metaobject(customer.id, 'ucp_user_profile', {
+  consent_status: JSON.stringify(session.consentStatus),
+  user_history: JSON.stringify(session.userHistory)
+});
+
+// Google AI Stream
+await google_ai_stream_event({
+  user_id: customer.id,
+  event_type: eventType,
+  timestamp: new Date().toISOString()
+});
+
+return { success: true, customerId: customer.id };</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Idempotency Implementation</h2>
+          <p class="code-section-description">
+            Implement idempotency checks when syncing data to Shopify.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript</span>
+              <button class="copy-button" data-copy="idempotency">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-idempotency"><code>async function syncToShopify(session, eventType, eventData) {
+  const idempotencyKey = `${session.sessionId}_${eventType}_${Date.now()}`;
+  
+  // Check if already processed
+  const existing = await xano.query('idempotency_log')
+    .where('idempotency_key', idempotencyKey)
+    .first();
+  
+  if (existing) {
+    return existing.result;
+  }
+  
+  try {
+    const customer = await shopify.findOrCreateCustomer(session.email);
+    await shopify.updateMetaobject({
+      ownerId: customer.id,
+      namespace: 'ucp',
+      key: 'user_profile',
+      value: JSON.stringify(session)
+    });
+    
+    const result = { success: true, customerId: customer.id };
+    await xano.insert('idempotency_log', {
+      idempotency_key: idempotencyKey,
+      result: result
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Sync error:', error);
+    throw error;
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shopify Tab -->
+      <div class="tab-panel" id="tab-shopify">
+        <div class="code-section">
+          <h2 class="code-section-title">Create Customer with Metaobject</h2>
+          <p class="code-section-description">
+            GraphQL mutation to create a customer with metafields.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">GraphQL</span>
+              <button class="copy-button" data-copy="shopify-create">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-shopify-create"><code>mutation createCustomer($input: CustomerInput!) {
+  customerCreate(input: $input) {
+    customer {
+      id
+      email
+      metafields(first: 10) {
+        edges {
+          node {
+            namespace
+            key
+            value
+          }
+        }
+      }
+    }
+  }
+}
+
+// Variables
+{
+  "input": {
+    "email": "user@example.com",
+    "tags": ["ucp-user"],
+    "metafields": [
+      {
+        "namespace": "ucp",
+        "key": "consent_status",
+        "value": "{\"analytics\":true}",
+        "type": "json"
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Metaobject Definition Setup</h2>
+          <p class="code-section-description">
+            Steps to create a Metaobject definition in Shopify admin.
+          </p>
+          <div class="steps-card">
+            <ol class="steps-list">
+              <li>
+                <span class="step-number">01.</span>
+                <span>Navigate to Settings → Custom data → Metaobjects</span>
+              </li>
+              <li>
+                <span class="step-number">02.</span>
+                <span>Create new Metaobject definition: "UCP User Profile"</span>
+              </li>
+              <li>
+                <span class="step-number">03.</span>
+                <div>
+                  <p>Add these fields:</p>
+                  <ul class="field-list">
+                    <li>• consent_status (JSON)</li>
+                    <li>• user_history (JSON)</li>
+                    <li>• last_seen (DateTime)</li>
+                  </ul>
+                </div>
+              </li>
+              <li>
+                <span class="step-number">04.</span>
+                <span>Associate with customer records</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Tab -->
+      <div class="tab-panel" id="tab-security">
+        <div class="code-section">
+          <h2 class="code-section-title">JWT Token Generation</h2>
+          <p class="code-section-description">
+            Generate JWT tokens for secure communication between services.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript</span>
+              <button class="copy-button" data-copy="jwt">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-jwt"><code>function generateJWT(userId, sessionId) {
+  const payload = {
+    userId: userId,
+    sessionId: sessionId,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + (60 * 60)
+  };
+  
+  const secret = process.env.JWT_SECRET;
+  return jwt.sign(payload, secret);
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Security Best Practices</h2>
+          <div class="security-practices">
+            <ul class="practices-list">
+              <li><span class="practice-bullet">▪</span> Always use TLS/HTTPS for all API communications</li>
+              <li><span class="practice-bullet">▪</span> Store API keys and secrets in environment variables</li>
+              <li><span class="practice-bullet">▪</span> Implement rate limiting on webhook endpoints</li>
+              <li><span class="practice-bullet">▪</span> Use JWT tokens with short expiration times</li>
+              <li><span class="practice-bullet">▪</span> Validate and sanitize all incoming data</li>
+              <li><span class="practice-bullet">▪</span> Log all security-related events for auditing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

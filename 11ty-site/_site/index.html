@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home | Webflow Integration KB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="/" class="logo">
+          <div class="logo-icon">KB</div>
+          <span class="logo-text">Integration Docs</span>
+        </a>
+        
+        <nav class="nav-desktop">
+          <a href="/" class="nav-link active">
+            <span class="nav-icon">📖</span>
+            Overview
+          </a>
+          <a href="/architecture/" class="nav-link ">
+            <span class="nav-icon">🏗️</span>
+            Architecture
+          </a>
+          <a href="/implementation/" class="nav-link ">
+            <span class="nav-icon">💻</span>
+            Implementation
+          </a>
+          <a href="/eleventy-graphql/" class="nav-link ">
+            <span class="nav-icon">📄</span>
+            11ty GraphQL
+          </a>
+          <a href="/prd/" class="nav-link ">
+            <span class="nav-icon">📋</span>
+            Claude PRD
+          </a>
+          <a href="/flow-chart/" class="nav-link ">
+            <span class="nav-icon">📊</span>
+            Flow Charts
+          </a>
+        </nav>
+      </div>
+      
+      <div class="header-right">
+        <div class="search-container">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search documentation...">
+          <span class="search-icon">🔍</span>
+        </div>
+        
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+          <span class="hamburger"></span>
+        </button>
+      </div>
+    </div>
+    
+    <nav class="nav-mobile" id="mobileNav">
+      <a href="/" class="nav-link-mobile">
+        <span class="nav-icon">📖</span>
+        Overview
+      </a>
+      <a href="/architecture/" class="nav-link-mobile">
+        <span class="nav-icon">🏗️</span>
+        Architecture
+      </a>
+      <a href="/implementation/" class="nav-link-mobile">
+        <span class="nav-icon">💻</span>
+        Implementation
+      </a>
+      <a href="/eleventy-graphql/" class="nav-link-mobile">
+        <span class="nav-icon">📄</span>
+        11ty GraphQL
+      </a>
+      <a href="/prd/" class="nav-link-mobile">
+        <span class="nav-icon">📋</span>
+        Claude PRD
+      </a>
+      <a href="/flow-chart/" class="nav-link-mobile">
+        <span class="nav-icon">📊</span>
+        Flow Charts
+      </a>
+    </nav>
+  </div>
+</header>
+
+  
+  <main class="main-content">
+    <div class="container">
+      
+<div class="page-content">
+  <div class="hero-section">
+    <h1 class="hero-title">Webflow to Shopify & Google AI Integration</h1>
+    <p class="hero-description">
+      A comprehensive technical guideline for integrating Webflow API Collections with UCP Session management, 
+      user history, consent tracking, and real-time data streaming via Xano/n8n to Shopify and Google AI Data Stream.
+    </p>
+    <div class="hero-actions">
+      <a href="/architecture/" class="btn btn-primary">
+        Get Started
+        <span class="btn-icon">→</span>
+      </a>
+      <a href="/implementation/" class="btn btn-secondary">
+        <span class="btn-icon">💻</span>
+        View Code Examples
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Key Technologies</h2>
+    <div class="card-grid">
+      <div class="card card-hover">
+        <div class="card-icon">🏗️</div>
+        <h3 class="card-title">Webflow Front-end</h3>
+        <p class="card-description">
+          Presentation layer and user interface with UCP session management and consent tracking.
+        </p>
+      </div>
+
+      <div class="card card-hover">
+        <div class="card-icon">⚡</div>
+        <h3 class="card-title">Xano/n8n Middleware</h3>
+        <p class="card-description">
+          Webhook processing, data transformation, and workflow automation layer.
+        </p>
+      </div>
+
+      <div class="card card-hover">
+        <div class="card-icon">💻</div>
+        <h3 class="card-title">Shopify Backend</h3>
+        <p class="card-description">
+          Customer data management with Metaobjects for custom data storage and AI-enabled CRM.
+        </p>
+      </div>
+
+      <div class="card card-hover">
+        <div class="card-icon">📄</div>
+        <h3 class="card-title">Google AI Platform</h3>
+        <p class="card-description">
+          Real-time data streaming and AI-powered analytics for personalization.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Documentation</h2>
+    <div class="doc-links">
+      <a href="/architecture/" class="doc-link">
+        <div class="doc-link-content">
+          <h3 class="doc-link-title">Architecture Overview</h3>
+          <p class="doc-link-description">
+            Complete data flow architecture from Webflow to Shopify and Google AI, including diagrams and component descriptions.
+          </p>
+        </div>
+        <span class="doc-link-arrow">→</span>
+      </a>
+
+      <a href="/implementation/" class="doc-link">
+        <div class="doc-link-content">
+          <h3 class="doc-link-title">Implementation Examples</h3>
+          <p class="doc-link-description">
+            Practical code examples for client-side JavaScript, middleware logic, Shopify GraphQL, and security implementations.
+          </p>
+        </div>
+        <span class="doc-link-arrow">→</span>
+      </a>
+
+      <a href="/eleventy-graphql/" class="doc-link">
+        <div class="doc-link-content">
+          <h3 class="doc-link-title">11ty GraphQL Directives</h3>
+          <p class="doc-link-description">
+            Parallel page generation with Eleventy and GraphQL directives for building static sites with dynamic data.
+          </p>
+        </div>
+        <span class="doc-link-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="quick-start-card">
+      <h2 class="quick-start-title">Quick Start</h2>
+      <p class="quick-start-intro">
+        Follow these steps to implement the integration in your project:
+      </p>
+      <ol class="quick-start-list">
+        <li>
+          <span class="step-number">01.</span>
+          <span>Review the architecture overview to understand the complete data flow</span>
+        </li>
+        <li>
+          <span class="step-number">02.</span>
+          <span>Set up the client-side UCP session manager in your Webflow project</span>
+        </li>
+        <li>
+          <span class="step-number">03.</span>
+          <span>Configure webhook endpoints in Xano or n8n for data processing</span>
+        </li>
+        <li>
+          <span class="step-number">04.</span>
+          <span>Create Shopify Metaobject definitions for storing user data</span>
+        </li>
+        <li>
+          <span class="step-number">05.</span>
+          <span>Set up Google AI data stream for real-time analytics</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </main>
+  
+  <footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-left">
+        <span class="footer-title">Webflow Integration Knowledge Base</span>
+        <span class="footer-separator">·</span>
+        <span>Built with 11ty</span>
+      </div>
+      <div class="footer-right">
+        <span>Version 1.0</span>
+        <span class="footer-separator">·</span>
+        <span>2026</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+  <script src="/js/main.js"></script>
+</body>
+</html>

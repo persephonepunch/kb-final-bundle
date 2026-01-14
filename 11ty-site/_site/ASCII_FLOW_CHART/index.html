@@ -1,0 +1,1330 @@
+<h1>ASCII Flow Charts</h1>
+<h2>11ty + Shopify UCP + Google AI Integration</h2>
+<p><strong>Version:</strong> 1.0<br>
+<strong>Date:</strong> January 14, 2026</p>
+<hr>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#1-complete-system-flow">Complete System Flow</a></li>
+<li><a href="#2-build-time-flow">Build-Time Flow</a></li>
+<li><a href="#3-runtime-data-flow">Runtime Data Flow</a></li>
+<li><a href="#4-ucp-session-flow">UCP Session Flow</a></li>
+<li><a href="#5-consent-management-flow">Consent Management Flow</a></li>
+<li><a href="#6-middleware-processing-flow">Middleware Processing Flow</a></li>
+<li><a href="#7-shopify-integration-flow">Shopify Integration Flow</a></li>
+<li><a href="#8-google-ai-integration-flow">Google AI Integration Flow</a></li>
+<li><a href="#9-websocket-real-time-flow">WebSocket Real-Time Flow</a></li>
+<li><a href="#10-webflow-integration-flow">Webflow Integration Flow</a></li>
+</ol>
+<hr>
+<h2>1. Complete System Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────────┐
+│                          COMPLETE SYSTEM ARCHITECTURE                        │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                         BUILD TIME (11ty)                              │ │
+│  │                                                                        │ │
+│  │   ┌──────────────┐                                                    │ │
+│  │   │   Developer  │                                                    │ │
+│  │   │   Triggers   │                                                    │ │
+│  │   │   Build      │                                                    │ │
+│  │   └──────┬───────┘                                                    │ │
+│  │          │                                                            │ │
+│  │          │ npm run build                                              │ │
+│  │          ▼                                                            │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  11ty Build Process                                          │   │ │
+│  │   │  ┌────────────────────────────────────────────────────────┐ │   │ │
+│  │   │  │  1. Read .eleventy.js config                           │ │   │ │
+│  │   │  │  2. Execute data files in src/_data/                   │ │   │ │
+│  │   │  │  3. Fetch from Shopify UCP Catalog (GraphQL)           │ │   │ │
+│  │   │  │  4. Process Nunjucks templates                         │ │   │ │
+│  │   │  │  5. Apply BEM CSS                                      │ │   │ │
+│  │   │  │  6. Copy static assets (CSS, JS, images)               │ │   │ │
+│  │   │  │  7. Generate HTML files                                │ │   │ │
+│  │   │  └────────────────────────────────────────────────────────┘ │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  │                              │                                        │ │
+│  │                              │                                        │ │
+│  │                              ▼                                        │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  Shopify UCP Catalog API                                     │   │ │
+│  │   │  ┌────────────────────────────────────────────────────────┐ │   │ │
+│  │   │  │  GraphQL Query:                                        │ │   │ │
+│  │   │  │  query GetProducts($first: Int!) {                     │ │   │ │
+│  │   │  │    products(first: $first) {                           │ │   │ │
+│  │   │  │      edges {                                           │ │   │ │
+│  │   │  │        node {                                          │ │   │ │
+│  │   │  │          id, title, handle, description               │ │   │ │
+│  │   │  │          priceRange { minVariantPrice }               │ │   │ │
+│  │   │  │          images { url, altText }                      │ │   │ │
+│  │   │  │        }                                              │ │   │ │
+│  │   │  │      }                                                │ │   │ │
+│  │   │  │    }                                                  │ │   │ │
+│  │   │  │  }                                                    │ │   │ │
+│  │   │  └────────────────────────────────────────────────────────┘ │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  │                              │                                        │ │
+│  │                              │ Return Product Data                    │ │
+│  │                              ▼                                        │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  Generated Static Site (_site/)                              │   │ │
+│  │   │  ├── index.html                                              │   │ │
+│  │   │  ├── architecture/index.html                                 │   │ │
+│  │   │  ├── implementation/index.html                               │   │ │
+│  │   │  ├── eleventy-graphql/index.html                             │   │ │
+│  │   │  ├── products/                                               │   │ │
+│  │   │  │   ├── product-1/index.html                                │   │ │
+│  │   │  │   ├── product-2/index.html                                │   │ │
+│  │   │  │   └── ...                                                 │   │ │
+│  │   │  ├── css/main.css                                            │   │ │
+│  │   │  └── js/main.js                                              │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                   │                                         │
+│                                   │ Deploy to CDN                           │
+│                                   ▼                                         │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                         RUNTIME (Client-Side)                          │ │
+│  │                                                                        │ │
+│  │   ┌──────────────┐                                                    │ │
+│  │   │   User       │                                                    │ │
+│  │   │   Browser    │                                                    │ │
+│  │   └──────┬───────┘                                                    │ │
+│  │          │                                                            │ │
+│  │          │ Request Page                                               │ │
+│  │          ▼                                                            │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  CDN / Static Host                                           │   │ │
+│  │   │  - Serve HTML, CSS, JS                                       │   │ │
+│  │   │  - Cache-Control headers                                     │   │ │
+│  │   │  - Gzip compression                                          │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  │                              │                                        │ │
+│  │                              │ Return Static Files                    │ │
+│  │                              ▼                                        │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  Browser Renders Page                                        │   │ │
+│  │   │  ┌────────────────────────────────────────────────────────┐ │   │ │
+│  │   │  │  1. Parse HTML                                         │ │   │ │
+│  │   │  │  2. Load CSS (BEM styles)                              │ │   │ │
+│  │   │  │  3. Execute JavaScript:                                │ │   │ │
+│  │   │  │     - Initialize UCP Session Manager                   │ │   │ │
+│  │   │  │     - Load consent preferences                         │ │   │ │
+│  │   │  │     - Attach event listeners                           │ │   │ │
+│  │   │  │     - Connect WebSocket                                │ │   │ │
+│  │   │  └────────────────────────────────────────────────────────┘ │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  │                              │                                        │ │
+│  │                              │ User Interaction                       │ │
+│  │                              ▼                                        │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  UCP Session Manager (Client-Side JS)                        │   │ │
+│  │   │  ┌────────────────────────────────────────────────────────┐ │   │ │
+│  │   │  │  - Track page views                                    │ │   │ │
+│  │   │  │  - Track button clicks                                 │ │   │ │
+│  │   │  │  - Track form submissions                              │ │   │ │
+│  │   │  │  - Store in sessionStorage                             │ │   │ │
+│  │   │  │  - Send webhook to middleware                          │ │   │ │
+│  │   │  └────────────────────────────────────────────────────────┘ │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                   │                                         │
+│                                   │ POST /api/webhook                       │
+│                                   ▼                                         │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                         MIDDLEWARE (Xano/n8n)                          │ │
+│  │                                                                        │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  Webhook Endpoint                                            │   │ │
+│  │   │  ┌────────────────────────────────────────────────────────┐ │   │ │
+│  │   │  │  1. Validate HMAC signature                            │ │   │ │
+│  │   │  │  2. Parse JSON payload                                 │ │   │ │
+│  │   │  │  3. Check idempotency key                              │ │   │ │
+│  │   │  │  4. Transform data                                     │ │   │ │
+│  │   │  │  5. Route to backends                                  │ │   │ │
+│  │   │  └────────────────────────────────────────────────────────┘ │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  │                    │                              │                    │ │
+│  │                    │                              │                    │ │
+│  │         ┌──────────┘                              └──────────┐         │ │
+│  │         │                                                    │         │ │
+│  │         ▼                                                    ▼         │ │
+│  │   ┌─────────────────────┐                    ┌──────────────────────┐ │ │
+│  │   │  Shopify Admin API  │                    │  Google AI           │ │ │
+│  │   │  ┌───────────────┐  │                    │  Data Stream         │ │ │
+│  │   │  │ GraphQL       │  │                    │  ┌────────────────┐  │ │ │
+│  │   │  │ Mutations:    │  │                    │  │ POST /write    │  │ │ │
+│  │   │  │ - Create      │  │                    │  │ {              │  │ │ │
+│  │   │  │   Customer    │  │                    │  │   events: [    │  │ │ │
+│  │   │  │ - Update      │  │                    │  │     {          │  │ │ │
+│  │   │  │   Metaobject  │  │                    │  │       user_id  │  │ │ │
+│  │   │  └───────────────┘  │                    │  │       event    │  │ │ │
+│  │   └─────────────────────┘                    │  │     }          │  │ │ │
+│  │                                               │  │   ]            │  │ │ │
+│  │                                               │  │ }              │  │ │ │
+│  │                                               │  └────────────────┘  │ │ │
+│  │                                               └──────────────────────┘ │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                   │                                         │
+│                                   │ WebSocket Push                          │
+│                                   ▼                                         │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                         REAL-TIME UPDATES                              │ │
+│  │                                                                        │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  WebSocket Server                                            │   │ │
+│  │   │  - Emit personalization events                               │   │ │
+│  │   │  - Emit consent confirmations                                │   │ │
+│  │   │  - Emit analytics updates                                    │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  │                              │                                        │ │
+│  │                              │ WebSocket Message                      │ │
+│  │                              ▼                                        │ │
+│  │   ┌──────────────────────────────────────────────────────────────┐   │ │
+│  │   │  Browser WebSocket Client                                    │   │ │
+│  │   │  - Update UI with recommendations                            │   │ │
+│  │   │  - Show consent confirmation                                 │   │ │
+│  │   │  - Display analytics                                         │   │ │
+│  │   └──────────────────────────────────────────────────────────────┘   │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>2. Build-Time Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    11ty BUILD PROCESS                           │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  Developer   │
+    │  Runs Build  │
+    └──────┬───────┘
+           │
+           │ npm run build
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  11ty Initialization                                     │
+    │  - Read .eleventy.js                                     │
+    │  - Set input/output directories                          │
+    │  - Configure passthrough copy                            │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Execute Data Files (src/_data/)                         │
+    │                                                          │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  graphqlClient.js                                  │ │
+    │  │  - Create GraphQL client instance                  │ │
+    │  │  - Configure endpoint &amp; headers                    │ │
+    │  └────────────────────────────────────────────────────┘ │
+    │                      │                                   │
+    │                      ▼                                   │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  products.js                                       │ │
+    │  │  - Export async function                           │ │
+    │  │  - Call GraphQL query                              │ │
+    │  └────────────────────────────────────────────────────┘ │
+    │                      │                                   │
+    │                      ▼                                   │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  collections.js                                    │ │
+    │  │  - Export async function                           │ │
+    │  │  - Call GraphQL query                              │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Fetch Data
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Shopify UCP Catalog API                                 │
+    │                                                          │
+    │  POST https://{shop}.myshopify.com/api/graphql.json     │
+    │  Headers:                                                │
+    │    X-Shopify-Storefront-Access-Token: {token}           │
+    │                                                          │
+    │  Query:                                                  │
+    │    query GetProducts($first: Int!, $after: String) {    │
+    │      products(first: $first, after: $after) {           │
+    │        pageInfo { hasNextPage endCursor }               │
+    │        edges {                                           │
+    │          node {                                          │
+    │            id, title, handle, description               │
+    │            priceRange { minVariantPrice }               │
+    │            images { url altText }                       │
+    │          }                                               │
+    │        }                                                 │
+    │      }                                                   │
+    │    }                                                     │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Return JSON
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Data Available to Templates                             │
+    │  - products: Array[Product]                              │
+    │  - collections: Array[Collection]                        │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Process Templates                                       │
+    │                                                          │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  src/index.njk                                     │ │
+    │  │  → _site/index.html                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    │                      │                                   │
+    │                      ▼                                   │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  src/architecture.njk                              │ │
+    │  │  → _site/architecture/index.html                   │ │
+    │  └────────────────────────────────────────────────────┘ │
+    │                      │                                   │
+    │                      ▼                                   │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  Pagination: src/products.njk                      │ │
+    │  │  For each product in products:                     │ │
+    │  │    → _site/products/{handle}/index.html            │ │
+    │  │                                                    │ │
+    │  │  Example:                                          │ │
+    │  │    products[0].handle = &quot;widget&quot;                   │ │
+    │  │    → _site/products/widget/index.html              │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Copy Static Assets                                      │
+    │  - src/css/main.css → _site/css/main.css                │
+    │  - src/js/main.js → _site/js/main.js                    │
+    │  - src/images/* → _site/images/*                        │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Build Complete                                          │
+    │  ✓ 4 HTML files generated                                │
+    │  ✓ 1000 product pages generated                          │
+    │  ✓ Static assets copied                                  │
+    │  ✓ Build time: 4m 32s                                    │
+    └──────────────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Deploy to CDN                                           │
+    │  - Netlify / Vercel / Cloudflare Pages                   │
+    │  - AWS S3 + CloudFront                                   │
+    │  - Any static hosting                                    │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>3. Runtime Data Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    RUNTIME DATA FLOW                            │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │     User     │
+    │   Visits     │
+    │   Website    │
+    └──────┬───────┘
+           │
+           │ GET /products/widget/
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  CDN / Static Host                                       │
+    │  - Serve _site/products/widget/index.html                │
+    │  - Serve _site/css/main.css                              │
+    │  - Serve _site/js/main.js                                │
+    │  - Cache-Control: max-age=3600                           │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ 200 OK + HTML/CSS/JS
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Browser                                                 │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Parse HTML                                     │ │
+    │  │  2. Apply CSS (BEM styles)                         │ │
+    │  │  3. Execute main.js:                               │ │
+    │  │     - initMobileMenu()                             │ │
+    │  │     - initSearch()                                 │ │
+    │  │     - initTabs()                                   │ │
+    │  │     - initCopyButtons()                            │ │
+    │  │     - initUCPSession() ← NEW                       │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Initialize
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  UCP Session Manager                                     │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  constructor() {                                   │ │
+    │  │    this.sessionId = getOrCreateSessionId();        │ │
+    │  │    this.sessionData = loadSession();               │ │
+    │  │    this.webhookUrl = 'https://xano.io/webhook';    │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Check sessionStorage
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  sessionStorage                                          │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  ucp_session_id: &quot;session_123456&quot;                  │ │
+    │  │  ucp_session_data: {                               │ │
+    │  │    sessionId: &quot;session_123456&quot;,                    │ │
+    │  │    consentStatus: {},                              │ │
+    │  │    userHistory: []                                 │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ User Interacts
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Event Listeners                                         │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  Page View:                                        │ │
+    │  │    trackEvent('page_view', { page: '/products' })  │ │
+    │  │                                                    │ │
+    │  │  Button Click:                                     │ │
+    │  │    trackEvent('click', { button: 'add-to-cart' })  │ │
+    │  │                                                    │ │
+    │  │  Form Submit:                                      │ │
+    │  │    trackEvent('form_submit', { form: 'contact' })  │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ trackEvent()
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  UCP Session Manager                                     │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  trackEvent(eventType, eventData) {                │ │
+    │  │    const event = {                                 │ │
+    │  │      timestamp: new Date().toISOString(),          │ │
+    │  │      type: eventType,                              │ │
+    │  │      data: eventData,                              │ │
+    │  │      page: window.location.pathname                │ │
+    │  │    };                                              │ │
+    │  │    this.sessionData.userHistory.push(event);       │ │
+    │  │    this.saveSession();                             │ │
+    │  │    this.sendWebhook('event_tracked', event);       │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ sendWebhook()
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  HTTP POST Request                                       │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  POST https://your-xano.xano.io/api/webhook       │ │
+    │  │  Headers:                                          │ │
+    │  │    Content-Type: application/json                  │ │
+    │  │    X-Webhook-Signature: {hmac}                     │ │
+    │  │  Body:                                             │ │
+    │  │  {                                                 │ │
+    │  │    &quot;eventType&quot;: &quot;event_tracked&quot;,                   │ │
+    │  │    &quot;session&quot;: {                                    │ │
+    │  │      &quot;sessionId&quot;: &quot;session_123456&quot;,                │ │
+    │  │      &quot;email&quot;: &quot;user@example.com&quot;,                  │ │
+    │  │      &quot;consentStatus&quot;: {...},                       │ │
+    │  │      &quot;userHistory&quot;: [...]                          │ │
+    │  │    }                                               │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Async (non-blocking)
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Middleware (Xano/n8n)                                   │
+    │  [See Middleware Processing Flow for details]            │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>4. UCP Session Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    UCP SESSION LIFECYCLE                        │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  First Visit │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Check sessionStorage                                    │
+    │  sessionStorage.getItem('ucp_session_id')                │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ├─── Session Exists? ───┐
+           │                        │
+          NO                       YES
+           │                        │
+           ▼                        ▼
+    ┌──────────────────┐    ┌──────────────────┐
+    │  Create New      │    │  Load Existing   │
+    │  Session         │    │  Session         │
+    │                  │    │                  │
+    │  sessionId =     │    │  sessionId =     │
+    │  &quot;session_&quot; +    │    │  (from storage)  │
+    │  Date.now() +    │    │                  │
+    │  random()        │    │  sessionData =   │
+    │                  │    │  JSON.parse(     │
+    │  sessionData = { │    │    storage)      │
+    │    sessionId,    │    └──────────────────┘
+    │    consentStatus │             │
+    │    userHistory   │             │
+    │  }               │             │
+    └──────┬───────────┘             │
+           │                         │
+           └─────────┬───────────────┘
+                     │
+                     ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Session Active                                          │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  Properties:                                       │ │
+    │  │  - sessionId: string                               │ │
+    │  │  - userId?: string                                 │ │
+    │  │  - email?: string                                  │ │
+    │  │  - consentStatus: {                                │ │
+    │  │      analytics: { granted, timestamp },            │ │
+    │  │      marketing: { granted, timestamp }             │ │
+    │  │    }                                               │ │
+    │  │  - userHistory: [                                  │ │
+    │  │      { timestamp, type, page, data }               │ │
+    │  │    ]                                               │ │
+    │  │  - createdAt: ISO 8601                             │ │
+    │  │  - lastActive: ISO 8601                            │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ User Actions
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Event Tracking                                          │
+    │                                                          │
+    │  ┌────────────────┐  ┌────────────────┐  ┌───────────┐ │
+    │  │  Page View     │  │  Button Click  │  │  Form     │ │
+    │  │  ────────────  │  │  ────────────  │  │  Submit   │ │
+    │  │  trackEvent(   │  │  trackEvent(   │  │  ───────  │ │
+    │  │   'page_view', │  │   'click',     │  │  track... │ │
+    │  │   {page}       │  │   {button}     │  │           │ │
+    │  │  )             │  │  )             │  │           │ │
+    │  └────────┬───────┘  └────────┬───────┘  └─────┬─────┘ │
+    │           │                   │                 │       │
+    │           └───────────────────┼─────────────────┘       │
+    │                               │                         │
+    └───────────────────────────────┼─────────────────────────┘
+                                    │
+                                    ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Update Session Data                                     │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Create event object:                           │ │
+    │  │     {                                              │ │
+    │  │       timestamp: &quot;2026-01-14T12:00:00Z&quot;,           │ │
+    │  │       type: &quot;page_view&quot;,                           │ │
+    │  │       page: &quot;/products/widget&quot;,                    │ │
+    │  │       data: {}                                     │ │
+    │  │     }                                              │ │
+    │  │                                                    │ │
+    │  │  2. Push to userHistory array                      │ │
+    │  │                                                    │ │
+    │  │  3. Update lastActive timestamp                    │ │
+    │  │                                                    │ │
+    │  │  4. Save to sessionStorage:                        │ │
+    │  │     sessionStorage.setItem(                        │ │
+    │  │       'ucp_session_data',                          │ │
+    │  │       JSON.stringify(sessionData)                  │ │
+    │  │     )                                              │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ If significant event
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Send Webhook to Middleware                              │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  fetch(webhookUrl, {                               │ │
+    │  │    method: 'POST',                                 │ │
+    │  │    headers: {                                      │ │
+    │  │      'Content-Type': 'application/json',           │ │
+    │  │      'X-Webhook-Signature': generateHMAC()         │ │
+    │  │    },                                              │ │
+    │  │    body: JSON.stringify({                          │ │
+    │  │      eventType: 'event_tracked',                   │ │
+    │  │      session: sessionData                          │ │
+    │  │    })                                              │ │
+    │  │  })                                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Continue browsing...
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Session Ends                                            │
+    │  - User closes browser tab                               │
+    │  - sessionStorage cleared                                │
+    │  - Session data persisted in Shopify Metaobjects         │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>5. Consent Management Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    CONSENT MANAGEMENT FLOW                      │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  Page Load   │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Check Consent Status                                    │
+    │  sessionData.consentStatus                               │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ├─── Consent Given? ───┐
+           │                       │
+          NO                      YES
+           │                       │
+           ▼                       ▼
+    ┌──────────────────┐    ┌──────────────────┐
+    │  Show Consent    │    │  Hide Banner     │
+    │  Banner          │    │  Enable Tracking │
+    │                  │    └──────────────────┘
+    │  ┌────────────┐  │
+    │  │ Cookie &amp;   │  │
+    │  │ Data       │  │
+    │  │ Consent    │  │
+    │  │            │  │
+    │  │ ☐ Analytics│  │
+    │  │ ☐ Marketing│  │
+    │  │            │  │
+    │  │ [Save]     │  │
+    │  └────────────┘  │
+    └──────┬───────────┘
+           │
+           │ User clicks Save
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Capture Consent Preferences                             │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  const analytics =                                 │ │
+    │  │    document.getElementById('analyticsConsent')     │ │
+    │  │      .checked;  // true or false                   │ │
+    │  │                                                    │ │
+    │  │  const marketing =                                 │ │
+    │  │    document.getElementById('marketingConsent')     │ │
+    │  │      .checked;  // true or false                   │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Update Session Data                                     │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  ucpSession.updateConsent('analytics', analytics); │ │
+    │  │  ucpSession.updateConsent('marketing', marketing); │ │
+    │  │                                                    │ │
+    │  │  // Inside updateConsent():                        │ │
+    │  │  sessionData.consentStatus[purpose] = {            │ │
+    │  │    granted: granted,                               │ │
+    │  │    timestamp: new Date().toISOString()             │ │
+    │  │  };                                                │ │
+    │  │                                                    │ │
+    │  │  saveSession(); // → sessionStorage                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Send Webhook                                            │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  POST /api/webhook                                 │ │
+    │  │  {                                                 │ │
+    │  │    &quot;eventType&quot;: &quot;consent_updated&quot;,                 │ │
+    │  │    &quot;session&quot;: {                                    │ │
+    │  │      &quot;sessionId&quot;: &quot;session_123456&quot;,                │ │
+    │  │      &quot;consentStatus&quot;: {                            │ │
+    │  │        &quot;analytics&quot;: {                              │ │
+    │  │          &quot;granted&quot;: true,                          │ │
+    │  │          &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot;       │ │
+    │  │        },                                          │ │
+    │  │        &quot;marketing&quot;: {                              │ │
+    │  │          &quot;granted&quot;: false,                         │ │
+    │  │          &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot;       │ │
+    │  │        }                                           │ │
+    │  │      }                                             │ │
+    │  │    }                                               │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Middleware Processing                                   │
+    │  - Validate consent data                                 │
+    │  - Sync to Shopify Metaobjects                           │
+    │  - Update Google AI consent signals                      │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Hide Consent Banner                                     │
+    │  document.getElementById('consentBanner')                │
+    │    .style.display = 'none';                              │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Enable/Disable Tracking                                 │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  if (consentStatus.analytics.granted) {            │ │
+    │  │    // Enable analytics tracking                    │ │
+    │  │    trackEvent('page_view', {...});                 │ │
+    │  │  } else {                                          │ │
+    │  │    // Disable analytics tracking                   │ │
+    │  │    // Do not send events                           │ │
+    │  │  }                                                 │ │
+    │  │                                                    │ │
+    │  │  if (consentStatus.marketing.granted) {            │ │
+    │  │    // Enable marketing pixels                      │ │
+    │  │    loadMarketingScripts();                         │ │
+    │  │  } else {                                          │ │
+    │  │    // Disable marketing pixels                     │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>6. Middleware Processing Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    MIDDLEWARE PROCESSING                        │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  Webhook     │
+    │  Received    │
+    └──────┬───────┘
+           │
+           │ POST /api/webhook
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Validate Request                                        │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Check X-Webhook-Signature header               │ │
+    │  │     const signature = req.headers['x-webhook...']  │ │
+    │  │                                                    │ │
+    │  │  2. Generate expected signature:                   │ │
+    │  │     const expected = crypto                        │ │
+    │  │       .createHmac('sha256', SECRET)                │ │
+    │  │       .update(JSON.stringify(req.body))            │ │
+    │  │       .digest('hex');                              │ │
+    │  │                                                    │ │
+    │  │  3. Compare signatures:                            │ │
+    │  │     if (signature !== expected) {                  │ │
+    │  │       return 401 Unauthorized                      │ │
+    │  │     }                                              │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Valid ✓
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Parse Payload                                           │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  const { eventType, session } = req.body;          │ │
+    │  │                                                    │ │
+    │  │  if (!session.sessionId || !eventType) {           │ │
+    │  │    return 400 Bad Request                          │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Check Idempotency                                       │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  const idempotencyKey =                            │ │
+    │  │    `${session.sessionId}_${eventType}_${Date.now}`;│ │
+    │  │                                                    │ │
+    │  │  const existing = await db.query(                  │ │
+    │  │    'idempotency_log',                              │ │
+    │  │    { key: idempotencyKey }                         │ │
+    │  │  );                                                │ │
+    │  │                                                    │ │
+    │  │  if (existing) {                                   │ │
+    │  │    return existing.result; // Cached result        │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ New Event
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Transform Data                                          │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  // For Shopify                                    │ │
+    │  │  const shopifyData = {                             │ │
+    │  │    email: session.email,                           │ │
+    │  │    tags: ['ucp-user', `session-${sessionId}`],     │ │
+    │  │    metafields: [                                   │ │
+    │  │      {                                             │ │
+    │  │        namespace: 'ucp',                           │ │
+    │  │        key: 'consent_status',                      │ │
+    │  │        value: JSON.stringify(consentStatus),       │ │
+    │  │        type: 'json'                                │ │
+    │  │      }                                             │ │
+    │  │    ]                                               │ │
+    │  │  };                                                │ │
+    │  │                                                    │ │
+    │  │  // For Google AI                                  │ │
+    │  │  const googleAIData = {                            │ │
+    │  │    user_id: session.userId,                        │ │
+    │  │    session_id: session.sessionId,                  │ │
+    │  │    event_type: eventType,                          │ │
+    │  │    event_timestamp: new Date().toISOString()       │ │
+    │  │  };                                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ├──────────────────┬────────────────────┐
+           │                  │                    │
+           ▼                  ▼                    ▼
+    ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+    │  Shopify     │   │  Google AI   │   │  WebSocket   │
+    │  Sync        │   │  Stream      │   │  Emit        │
+    └──────┬───────┘   └──────┬───────┘   └──────┬───────┘
+           │                  │                    │
+           │                  │                    │
+           └──────────────────┼────────────────────┘
+                              │
+                              ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Log Idempotency                                         │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  await db.insert('idempotency_log', {              │ │
+    │  │    idempotency_key: idempotencyKey,                │ │
+    │  │    result: { success: true, customerId },          │ │
+    │  │    created_at: new Date()                          │ │
+    │  │  });                                               │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Return Response                                         │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  return {                                          │ │
+    │  │    success: true,                                  │ │
+    │  │    customerId: &quot;gid://shopify/Customer/123456&quot;     │ │
+    │  │  };                                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>7. Shopify Integration Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    SHOPIFY INTEGRATION FLOW                     │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  Middleware  │
+    │  Receives    │
+    │  Session Data│
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Find or Create Customer                                 │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  GraphQL Query:                                    │ │
+    │  │                                                    │ │
+    │  │  query findCustomer($email: String!) {             │ │
+    │  │    customers(first: 1, query: $email) {            │ │
+    │  │      edges {                                       │ │
+    │  │        node {                                      │ │
+    │  │          id                                        │ │
+    │  │          email                                     │ │
+    │  │        }                                           │ │
+    │  │      }                                             │ │
+    │  │    }                                               │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ├─── Customer Exists? ───┐
+           │                         │
+          NO                        YES
+           │                         │
+           ▼                         ▼
+    ┌──────────────────┐    ┌──────────────────┐
+    │  Create Customer │    │  Use Existing    │
+    │                  │    │  Customer        │
+    │  mutation {      │    │                  │
+    │    customerCreate│    │  customerId =    │
+    │    (input: {     │    │  result.id       │
+    │      email,      │    └──────────────────┘
+    │      tags        │             │
+    │    }) {          │             │
+    │      customer {  │             │
+    │        id        │             │
+    │      }           │             │
+    │    }             │             │
+    │  }               │             │
+    └──────┬───────────┘             │
+           │                         │
+           └─────────┬───────────────┘
+                     │
+                     ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Create/Update Metaobject                                │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  mutation updateMetaobject(                        │ │
+    │  │    $id: ID!,                                       │ │
+    │  │    $metaobject: MetaobjectUpdateInput!             │ │
+    │  │  ) {                                               │ │
+    │  │    metaobjectUpdate(                               │ │
+    │  │      id: $id,                                      │ │
+    │  │      metaobject: $metaobject                       │ │
+    │  │    ) {                                             │ │
+    │  │      metaobject {                                  │ │
+    │  │        id                                          │ │
+    │  │        fields {                                    │ │
+    │  │          key                                       │ │
+    │  │          value                                     │ │
+    │  │        }                                           │ │
+    │  │      }                                             │ │
+    │  │    }                                               │ │
+    │  │  }                                                 │ │
+    │  │                                                    │ │
+    │  │  Variables:                                        │ │
+    │  │  {                                                 │ │
+    │  │    &quot;id&quot;: &quot;gid://shopify/Metaobject/789&quot;,          │ │
+    │  │    &quot;metaobject&quot;: {                                 │ │
+    │  │      &quot;fields&quot;: [                                   │ │
+    │  │        {                                           │ │
+    │  │          &quot;key&quot;: &quot;consent_status&quot;,                  │ │
+    │  │          &quot;value&quot;: &quot;{\&quot;analytics\&quot;:true}&quot;           │ │
+    │  │        },                                          │ │
+    │  │        {                                           │ │
+    │  │          &quot;key&quot;: &quot;user_history&quot;,                    │ │
+    │  │          &quot;value&quot;: &quot;[{...}]&quot;                        │ │
+    │  │        },                                          │ │
+    │  │        {                                           │ │
+    │  │          &quot;key&quot;: &quot;last_seen&quot;,                       │ │
+    │  │          &quot;value&quot;: &quot;2026-01-14T12:00:00Z&quot;           │ │
+    │  │        }                                           │ │
+    │  │      ]                                             │ │
+    │  │    }                                               │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Shopify Stores Data                                     │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  Customer Record:                                  │ │
+    │  │  - id: gid://shopify/Customer/123456               │ │
+    │  │  - email: user@example.com                         │ │
+    │  │  - tags: [&quot;ucp-user&quot;, &quot;session-123456&quot;]            │ │
+    │  │                                                    │ │
+    │  │  Metaobject (UCP User Profile):                    │ │
+    │  │  - id: gid://shopify/Metaobject/789               │ │
+    │  │  - owner_id: gid://shopify/Customer/123456        │ │
+    │  │  - fields:                                         │ │
+    │  │    * consent_status: {&quot;analytics&quot;: true, ...}      │ │
+    │  │    * user_history: [{...}, {...}]                  │ │
+    │  │    * last_seen: &quot;2026-01-14T12:00:00Z&quot;             │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>8. Google AI Integration Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    GOOGLE AI INTEGRATION FLOW                   │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  Middleware  │
+    │  Receives    │
+    │  Event Data  │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Transform to Google AI Format                           │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  const googleAIEvent = {                           │ │
+    │  │    user_id: session.userId || session.sessionId,   │ │
+    │  │    session_id: session.sessionId,                  │ │
+    │  │    event_type: eventType,                          │ │
+    │  │    event_timestamp: new Date().toISOString(),      │ │
+    │  │    event_data: {                                   │ │
+    │  │      page: event.page,                             │ │
+    │  │      referrer: document.referrer,                  │ │
+    │  │      device_type: getDeviceType(),                 │ │
+    │  │      consent_status: session.consentStatus         │ │
+    │  │    }                                               │ │
+    │  │  };                                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Batch Events                                            │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  // Collect events in memory                       │ │
+    │  │  eventBatch.push(googleAIEvent);                   │ │
+    │  │                                                    │ │
+    │  │  // Send when:                                     │ │
+    │  │  // - Batch size reaches 10 events                 │ │
+    │  │  // - 30 seconds have passed                       │ │
+    │  │  // - Critical event (e.g., purchase)              │ │
+    │  │                                                    │ │
+    │  │  if (eventBatch.length &gt;= 10 ||                    │ │
+    │  │      timeSinceLastSend &gt; 30000 ||                  │ │
+    │  │      event.critical) {                             │ │
+    │  │    sendBatchToGoogleAI(eventBatch);                │ │
+    │  │    eventBatch = [];                                │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Send Batch
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Google AI Data Stream API                               │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  POST https://datastream.googleapis.com/v1/        │ │
+    │  │       projects/{project}/streams/{stream}:write    │ │
+    │  │                                                    │ │
+    │  │  Headers:                                          │ │
+    │  │    Authorization: Bearer {oauth_token}             │ │
+    │  │    Content-Type: application/json                  │ │
+    │  │                                                    │ │
+    │  │  Body:                                             │ │
+    │  │  {                                                 │ │
+    │  │    &quot;events&quot;: [                                     │ │
+    │  │      {                                             │ │
+    │  │        &quot;user_id&quot;: &quot;user_789&quot;,                      │ │
+    │  │        &quot;session_id&quot;: &quot;session_123456&quot;,             │ │
+    │  │        &quot;event_type&quot;: &quot;page_view&quot;,                  │ │
+    │  │        &quot;event_timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot;,  │ │
+    │  │        &quot;event_data&quot;: {                             │ │
+    │  │          &quot;page&quot;: &quot;/products/widget&quot;,               │ │
+    │  │          &quot;device_type&quot;: &quot;mobile&quot;                   │ │
+    │  │        }                                           │ │
+    │  │      },                                            │ │
+    │  │      ...                                           │ │
+    │  │    ]                                               │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ 200 OK
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Google AI Processing                                    │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Ingest events into BigQuery                    │ │
+    │  │  2. Run ML models for:                             │ │
+    │  │     - User segmentation                            │ │
+    │  │     - Product recommendations                      │ │
+    │  │     - Churn prediction                             │ │
+    │  │     - Lifetime value estimation                    │ │
+    │  │  3. Generate insights                              │ │
+    │  │  4. Trigger real-time actions                      │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Predictions &amp; Insights
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Personalization Engine                                  │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  - Recommended products                            │ │
+    │  │  - Personalized content                            │ │
+    │  │  - Dynamic pricing                                 │ │
+    │  │  - Next best action                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Send to Middleware
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  WebSocket Emit                                          │
+    │  - Push recommendations to client                        │
+    │  - Update UI in real-time                                │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>9. WebSocket Real-Time Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    WEBSOCKET REAL-TIME FLOW                     │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  Page Load   │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Initialize WebSocket Client                             │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  const ws = new WebSocket(                         │ │
+    │  │    'wss://your-middleware.com/ws'                  │ │
+    │  │  );                                                │ │
+    │  │                                                    │ │
+    │  │  ws.onopen = () =&gt; {                               │ │
+    │  │    // Authenticate with session ID                 │ │
+    │  │    ws.send(JSON.stringify({                        │ │
+    │  │      type: 'authenticate',                         │ │
+    │  │      sessionId: ucpSession.sessionId               │ │
+    │  │    }));                                            │ │
+    │  │  };                                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ WebSocket Handshake
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  WebSocket Server (Middleware)                           │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Accept connection                              │ │
+    │  │  2. Wait for authentication message                │ │
+    │  │  3. Validate session ID                            │ │
+    │  │  4. Store connection:                              │ │
+    │  │     connections[sessionId] = ws                    │ │
+    │  │  5. Send confirmation                              │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           │ Connection Established
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Client Listening for Messages                           │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  ws.onmessage = (event) =&gt; {                       │ │
+    │  │    const message = JSON.parse(event.data);         │ │
+    │  │                                                    │ │
+    │  │    switch (message.type) {                         │ │
+    │  │      case 'personalization':                       │ │
+    │  │        updateRecommendations(message.data);        │ │
+    │  │        break;                                      │ │
+    │  │      case 'consent_confirmed':                     │ │
+    │  │        showConsentConfirmation();                  │ │
+    │  │        break;                                      │ │
+    │  │      case 'analytics_update':                      │ │
+    │  │        updateAnalyticsDashboard(message.data);     │ │
+    │  │        break;                                      │ │
+    │  │    }                                               │ │
+    │  │  };                                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────────────────────────────────────────────────────────┘
+           ▲
+           │
+           │ Server Sends Message
+           │
+    ┌──────┴───────────────────────────────────────────────────┐
+    │  Middleware Emits Event                                  │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  // After processing webhook                       │ │
+    │  │  const ws = connections[sessionId];                │ │
+    │  │                                                    │ │
+    │  │  if (ws &amp;&amp; ws.readyState === WebSocket.OPEN) {     │ │
+    │  │    ws.send(JSON.stringify({                        │ │
+    │  │      type: 'personalization',                      │ │
+    │  │      data: {                                       │ │
+    │  │        recommendations: [                          │ │
+    │  │          { id: 1, title: 'Product A' },            │ │
+    │  │          { id: 2, title: 'Product B' }             │ │
+    │  │        ]                                           │ │
+    │  │      }                                             │ │
+    │  │    }));                                            │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────────────────────────────────────────────────────────┘
+           │
+           │ Message Received
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Client Updates UI                                       │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  function updateRecommendations(data) {            │ │
+    │  │    const container =                               │ │
+    │  │      document.getElementById('recommendations');   │ │
+    │  │                                                    │ │
+    │  │    container.innerHTML = '';                       │ │
+    │  │                                                    │ │
+    │  │    data.recommendations.forEach(product =&gt; {       │ │
+    │  │      const card = createProductCard(product);      │ │
+    │  │      container.appendChild(card);                  │ │
+    │  │    });                                             │ │
+    │  │  }                                                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────────────────────────────────────────────────────────┘
+           │
+           │ Connection Lost?
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Reconnection Logic                                      │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  ws.onclose = () =&gt; {                              │ │
+    │  │    console.log('WebSocket closed, reconnecting...'); │ │
+    │  │                                                    │ │
+    │  │    setTimeout(() =&gt; {                              │ │
+    │  │      initializeWebSocket(); // Retry connection    │ │
+    │  │    }, 5000); // Wait 5 seconds                     │ │
+    │  │  };                                                │ │
+    │  │                                                    │ │
+    │  │  ws.onerror = (error) =&gt; {                         │ │
+    │  │    console.error('WebSocket error:', error);       │ │
+    │  │    // Fallback to polling if WebSocket fails       │ │
+    │  │    startPolling();                                 │ │
+    │  │  };                                                │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>10. Webflow Integration Flow</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    WEBFLOW INTEGRATION FLOW                     │
+└─────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │  Build 11ty  │
+    │  Site        │
+    └──────┬───────┘
+           │
+           │ npm run build
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Generated Files                                         │
+    │  - _site/css/main.css                                    │
+    │  - _site/js/main.js                                      │
+    │  - _site/*.html                                          │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Copy CSS to Webflow                                     │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Open _site/css/main.css                        │ │
+    │  │  2. Copy entire contents                           │ │
+    │  │  3. In Webflow:                                    │ │
+    │  │     Project Settings → Custom Code → Head Code     │ │
+    │  │  4. Paste:                                         │ │
+    │  │     &lt;style&gt;                                        │ │
+    │  │       /* Paste CSS here */                         │ │
+    │  │     &lt;/style&gt;                                       │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Copy JavaScript to Webflow                              │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Open _site/js/main.js                          │ │
+    │  │  2. Copy entire contents                           │ │
+    │  │  3. In Webflow:                                    │ │
+    │  │     Project Settings → Custom Code → Footer Code   │ │
+    │  │  4. Paste:                                         │ │
+    │  │     &lt;script&gt;                                       │ │
+    │  │       // Paste JavaScript here                     │ │
+    │  │     &lt;/script&gt;                                      │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Add Google Fonts                                        │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  Project Settings → Custom Code → Head Code        │ │
+    │  │                                                    │ │
+    │  │  &lt;link rel=&quot;preconnect&quot;                            │ │
+    │  │    href=&quot;https://fonts.googleapis.com&quot;&gt;            │ │
+    │  │  &lt;link rel=&quot;preconnect&quot;                            │ │
+    │  │    href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;   │ │
+    │  │  &lt;link href=&quot;https://fonts.googleapis.com/css2?    │ │
+    │  │    family=IBM+Plex+Sans:wght@400;500;600;700&amp;      │ │
+    │  │    family=IBM+Plex+Mono:wght@400;500;600&amp;          │ │
+    │  │    display=swap&quot; rel=&quot;stylesheet&quot;&gt;                 │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Build Pages in Webflow                                  │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  Reference: _site/index.html                       │ │
+    │  │                                                    │ │
+    │  │  HTML Structure:                                   │ │
+    │  │  &lt;div class=&quot;card card-hover&quot;&gt;                     │ │
+    │  │    &lt;div class=&quot;card-icon&quot;&gt;🏗️&lt;/div&gt;                 │ │
+    │  │    &lt;h3 class=&quot;card-title&quot;&gt;Title&lt;/h3&gt;               │ │
+    │  │    &lt;p class=&quot;card-description&quot;&gt;Description&lt;/p&gt;     │ │
+    │  │  &lt;/div&gt;                                            │ │
+    │  │                                                    │ │
+    │  │  Webflow:                                          │ │
+    │  │  1. Add Div Block → class: &quot;card card-hover&quot;       │ │
+    │  │  2. Add Div Block → class: &quot;card-icon&quot;             │ │
+    │  │  3. Add Heading (H3) → class: &quot;card-title&quot;         │ │
+    │  │  4. Add Paragraph → class: &quot;card-description&quot;      │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Create Webflow Symbols                                  │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  Reusable Components:                              │ │
+    │  │  - Header (with navigation)                        │ │
+    │  │  - Footer                                          │ │
+    │  │  - Card                                            │ │
+    │  │  - Button                                          │ │
+    │  │  - Code Block                                      │ │
+    │  │                                                    │ │
+    │  │  Apply BEM class names to each symbol              │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Test Functionality                                      │
+    │  ┌────────────────────────────────────────────────────┐ │
+    │  │  1. Publish Webflow site                           │ │
+    │  │  2. Test in browser:                               │ │
+    │  │     - Mobile menu toggle                           │ │
+    │  │     - Tab switching                                │ │
+    │  │     - Copy to clipboard buttons                    │ │
+    │  │     - UCP session tracking                         │ │
+    │  │     - Consent management                           │ │
+    │  │  3. Check browser console for errors               │ │
+    │  │  4. Verify webhooks are sent to middleware         │ │
+    │  └────────────────────────────────────────────────────┘ │
+    └──────┬───────────────────────────────────────────────────┘
+           │
+           ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │  Webflow Site Live                                       │
+    │  - Static HTML/CSS/JS served by Webflow CDN              │
+    │  - UCP session tracking active                           │
+    │  - Webhooks sent to middleware                           │
+    │  - Data synced to Shopify &amp; Google AI                    │
+    └──────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<p><strong>END OF ASCII FLOW CHARTS</strong></p>

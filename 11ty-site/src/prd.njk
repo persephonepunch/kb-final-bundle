@@ -1,0 +1,225 @@
+---
+layout: layouts/base.njk
+title: "Claude PRD: 11ty + Shopify + Google UCP"
+description: "Product Requirements Document for implementing 11ty with Shopify and Google UCP integration"
+---
+
+<main class="docs">
+  <div class="docs__container">
+    <aside class="docs__sidebar">
+      <nav class="docs__nav">
+        <a href="/" class="docs__nav-link">Overview</a>
+        <a href="/architecture/" class="docs__nav-link">Architecture</a>
+        <a href="/implementation/" class="docs__nav-link">Implementation</a>
+        <a href="/eleventy-graphql/" class="docs__nav-link">11ty GraphQL</a>
+        <a href="/prd/" class="docs__nav-link docs__nav-link--active">Claude PRD</a>
+        <a href="/flow-chart/" class="docs__nav-link">Flow Chart</a>
+      </nav>
+    </aside>
+
+    <article class="docs__content">
+      <header class="docs__header">
+        <h1 class="docs__title">Claude PRD: 11ty + Shopify + Google UCP</h1>
+        <p class="docs__subtitle">Complete Product Requirements Document for LLM implementation</p>
+        <div class="docs__actions">
+          <a href="/CLAUDE_PRD_11TY_SHOPIFY_UCP.md" download class="btn btn--primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download PRD
+          </a>
+          <a href="/LLM_IMPLEMENTATION_PROMPT.md" download class="btn btn--primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download LLM Prompt
+          </a>
+        </div>
+      </header>
+
+      <div class="docs__section">
+        <h2>Document Overview</h2>
+        <p>This Product Requirements Document provides comprehensive specifications for implementing an Eleventy (11ty) static site generator with Shopify Universal Commerce Protocol (UCP) and Google AI integration. The document is specifically designed for Claude (or other LLMs) to implement the complete system.</p>
+      </div>
+
+      <div class="docs__section">
+        <h2>Executive Summary</h2>
+        <div class="callout callout--info">
+          <h3>Project Goal</h3>
+          <p>Build a static e-commerce site using 11ty that fetches product data from Shopify's UCP Catalog API, implements OAuth 2.0 identity linking, processes payments via A2P (Agent Payments Protocol), and streams real-time data to Google AI for analytics and personalization.</p>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Key Features</h2>
+        <ul>
+          <li><strong>Static Site Generation:</strong> 11ty-based architecture for optimal performance</li>
+          <li><strong>UCP Catalog Integration:</strong> Fetch products from Shopify's global catalog</li>
+          <li><strong>OAuth 2.0 Identity:</strong> Secure user authentication and session management</li>
+          <li><strong>A2P Payment Processing:</strong> Cryptographic payment mandates</li>
+          <li><strong>Real-time Data Streaming:</strong> WebSocket connections to Google AI</li>
+          <li><strong>Consent Management:</strong> GDPR-compliant user consent tracking</li>
+        </ul>
+      </div>
+
+      <div class="docs__section">
+        <h2>Technical Stack</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">yaml</span>
+          </div>
+          <pre class="code-block__content"><code>Frontend:
+  - Eleventy (11ty) v3.x
+  - Nunjucks templates
+  - Vanilla JavaScript (ES6+)
+  - CSS3 (BEM methodology)
+
+Backend Services:
+  - Shopify UCP Catalog API
+  - OAuth 2.0 Identity Provider
+  - A2P Payment Gateway
+  - Google AI Data Stream API
+
+Middleware:
+  - Xano (optional)
+  - n8n (optional)
+  - WebSocket server
+
+Data Flow:
+  - REST APIs (Shopify UCP)
+  - WebSocket (real-time streaming)
+  - Server-Sent Events (notifications)</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Implementation Phases</h2>
+        
+        <h3>Phase 1: 11ty Setup & UCP Integration</h3>
+        <ol>
+          <li>Initialize 11ty project with proper directory structure</li>
+          <li>Configure data files to fetch from Shopify UCP Catalog API</li>
+          <li>Create product listing and detail page templates</li>
+          <li>Implement JWT authentication for API requests</li>
+          <li>Add error handling and fallback content</li>
+        </ol>
+
+        <h3>Phase 2: OAuth 2.0 Identity Linking</h3>
+        <ol>
+          <li>Implement OAuth 2.0 authorization code flow</li>
+          <li>Create login/logout UI components</li>
+          <li>Store session tokens securely (httpOnly cookies)</li>
+          <li>Add session validation middleware</li>
+          <li>Implement token refresh logic</li>
+        </ol>
+
+        <h3>Phase 3: A2P Payment Integration</h3>
+        <ol>
+          <li>Generate cryptographic payment mandates</li>
+          <li>Create checkout flow with A2P protocol</li>
+          <li>Implement idempotency checks</li>
+          <li>Add payment confirmation UI</li>
+          <li>Handle payment webhooks</li>
+        </ol>
+
+        <h3>Phase 4: Google AI Data Streaming</h3>
+        <ol>
+          <li>Set up WebSocket connection to Google AI</li>
+          <li>Implement consent management UI</li>
+          <li>Stream user behavior events (pageviews, clicks, purchases)</li>
+          <li>Add real-time personalization based on AI responses</li>
+          <li>Implement data retention policies</li>
+        </ol>
+      </div>
+
+      <div class="docs__section">
+        <h2>Success Metrics</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Target</th>
+              <th>Measurement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Build Time</td>
+              <td>&lt; 30 seconds</td>
+              <td>11ty build duration</td>
+            </tr>
+            <tr>
+              <td>Page Load Speed</td>
+              <td>&lt; 2 seconds</td>
+              <td>Lighthouse Performance score</td>
+            </tr>
+            <tr>
+              <td>API Response Time</td>
+              <td>&lt; 500ms</td>
+              <td>UCP Catalog API latency</td>
+            </tr>
+            <tr>
+              <td>Payment Success Rate</td>
+              <td>&gt; 95%</td>
+              <td>A2P transaction completion</td>
+            </tr>
+            <tr>
+              <td>WebSocket Uptime</td>
+              <td>&gt; 99.5%</td>
+              <td>Connection stability</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="docs__section">
+        <h2>Security Requirements</h2>
+        <ul>
+          <li><strong>Authentication:</strong> OAuth 2.0 with PKCE extension</li>
+          <li><strong>Authorization:</strong> JWT tokens with short expiration (15 min)</li>
+          <li><strong>Data Encryption:</strong> TLS 1.3 for all API communications</li>
+          <li><strong>Payment Security:</strong> PCI DSS compliant A2P implementation</li>
+          <li><strong>Consent Management:</strong> GDPR Article 7 compliance</li>
+          <li><strong>Data Retention:</strong> User data deleted after 90 days of inactivity</li>
+        </ul>
+      </div>
+
+      <div class="docs__section">
+        <h2>Download Documentation</h2>
+        <p>Get the complete Product Requirements Document and LLM Implementation Prompt for building this system.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+          <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 2rem;">
+            <h3 style="margin-bottom: 1rem;">📋 Product Requirements Document</h3>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Complete specifications, user stories, API schemas, database models, and implementation checklists.</p>
+            <a href="/CLAUDE_PRD_11TY_SHOPIFY_UCP.md" download class="btn btn--primary btn--large" style="width: 100%;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download PRD
+            </a>
+          </div>
+          
+          <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 2rem;">
+            <h3 style="margin-bottom: 1rem;">🤖 LLM Implementation Prompt</h3>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Step-by-step prompt for Claude or other LLMs to build the complete system from scratch.</p>
+            <a href="/LLM_IMPLEMENTATION_PROMPT.md" download class="btn btn--primary btn--large" style="width: 100%;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download LLM Prompt
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</main>

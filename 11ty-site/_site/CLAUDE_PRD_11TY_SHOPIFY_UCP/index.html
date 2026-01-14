@@ -1,0 +1,843 @@
+<h1>Product Requirements Document (PRD)</h1>
+<h2>11ty + Shopify UCP Catalog + Google AI Integration</h2>
+<p><strong>Version:</strong> 1.0<br>
+<strong>Date:</strong> January 14, 2026<br>
+<strong>Author:</strong> Manus AI<br>
+<strong>Target Audience:</strong> Claude AI, Development Teams</p>
+<hr>
+<h2>Executive Summary</h2>
+<p>This PRD defines the requirements for building a complete e-commerce knowledge base and product catalog system using Eleventy (11ty) as the static site generator, Shopify's Universal Commerce Protocol (UCP) Catalog as the product data source, and Google AI for real-time analytics and personalization. The system integrates with Webflow for front-end presentation and uses Xano/n8n for middleware orchestration.</p>
+<hr>
+<h2>1. Product Vision</h2>
+<h3>1.1 Problem Statement</h3>
+<p>Modern e-commerce requires:</p>
+<ul>
+<li><strong>Fast, SEO-optimized product pages</strong> that can be generated at scale</li>
+<li><strong>Real-time product data</strong> from centralized commerce platforms</li>
+<li><strong>AI-powered personalization</strong> based on user behavior</li>
+<li><strong>Flexible front-end</strong> that can be managed by non-technical teams</li>
+<li><strong>Consent-aware data tracking</strong> that respects user privacy</li>
+</ul>
+<h3>1.2 Solution Overview</h3>
+<p>Build a static site generator pipeline that:</p>
+<ol>
+<li>Fetches product data from Shopify UCP Catalog via GraphQL at build time</li>
+<li>Generates optimized HTML pages for each product using 11ty</li>
+<li>Tracks user sessions and consent on the client-side</li>
+<li>Streams interaction data to Google AI via middleware</li>
+<li>Enables real-time personalization and analytics</li>
+</ol>
+<h3>1.3 Success Criteria</h3>
+<ul>
+<li><strong>Build Performance:</strong> Generate 1000+ product pages in under 5 minutes</li>
+<li><strong>Page Load Speed:</strong> First Contentful Paint &lt; 1.5s</li>
+<li><strong>SEO Score:</strong> Lighthouse SEO score &gt; 95</li>
+<li><strong>Data Accuracy:</strong> 100% sync between Shopify and generated pages</li>
+<li><strong>Consent Compliance:</strong> GDPR/CCPA compliant consent management</li>
+</ul>
+<hr>
+<h2>2. System Architecture</h2>
+<h3>2.1 High-Level Architecture</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                     BUILD TIME (11ty)                           │
+│                                                                 │
+│  ┌──────────────┐      GraphQL      ┌──────────────────────┐  │
+│  │   11ty       │ ─────────────────&gt; │  Shopify UCP         │  │
+│  │   Build      │ &lt;───────────────── │  Catalog API         │  │
+│  │   Process    │      Products      │  (GraphQL)           │  │
+│  └──────────────┘                    └──────────────────────┘  │
+│         │                                                       │
+│         │ Generate Static HTML                                 │
+│         ▼                                                       │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │  Static Site (_site/)                                    │ │
+│  │  - index.html                                            │ │
+│  │  - products/product-1/index.html                         │ │
+│  │  - products/product-2/index.html                         │ │
+│  │  - css/main.css                                          │ │
+│  │  - js/main.js (UCP Session Manager)                     │ │
+│  └──────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              │ Deploy
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     RUNTIME (Client-Side)                       │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │  User Browser                                            │ │
+│  │  ┌────────────────────────────────────────────────────┐ │ │
+│  │  │  Static HTML + CSS + JS                            │ │ │
+│  │  │  - UCP Session Manager                             │ │ │
+│  │  │  - Consent Management UI                           │ │ │
+│  │  │  - Event Tracking                                  │ │ │
+│  │  └────────────────────────────────────────────────────┘ │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                              │                                  │
+│                              │ Webhook (POST)                   │
+│                              ▼                                  │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │  Middleware (Xano/n8n)                                   │ │
+│  │  - Receive webhook                                       │ │
+│  │  - Validate &amp; transform data                            │ │
+│  │  - Idempotency checks                                   │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                    │                    │                       │
+│                    │                    │                       │
+│         ┌──────────┘                    └──────────┐           │
+│         ▼                                          ▼           │
+│  ┌─────────────────┐                    ┌──────────────────┐  │
+│  │  Shopify        │                    │  Google AI       │  │
+│  │  Metaobjects    │                    │  Data Stream     │  │
+│  │  - Customer     │                    │  - Analytics     │  │
+│  │  - Consent      │                    │  - ML Models     │  │
+│  │  - History      │                    │  - Predictions   │  │
+│  └─────────────────┘                    └──────────────────┘  │
+│         │                                          │           │
+│         └──────────────────┬───────────────────────┘           │
+│                            │                                   │
+│                            ▼                                   │
+│                  ┌──────────────────┐                          │
+│                  │  WebSocket       │                          │
+│                  │  Real-time       │                          │
+│                  │  Updates         │                          │
+│                  └──────────────────┘                          │
+│                            │                                   │
+│                            │ Push Updates                      │
+│                            ▼                                   │
+│                  ┌──────────────────┐                          │
+│                  │  Client Browser  │                          │
+│                  │  (Personalized   │                          │
+│                  │   Content)       │                          │
+│                  └──────────────────┘                          │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3>2.2 Component Responsibilities</h3>
+<h4>2.2.1 11ty Build Process</h4>
+<ul>
+<li><strong>Input:</strong> Shopify UCP Catalog GraphQL API</li>
+<li><strong>Process:</strong>
+<ul>
+<li>Fetch all products via GraphQL queries</li>
+<li>Generate static HTML pages using Nunjucks templates</li>
+<li>Apply BEM CSS for styling</li>
+<li>Include vanilla JavaScript for client-side functionality</li>
+</ul>
+</li>
+<li><strong>Output:</strong> Static site in <code>_site/</code> directory</li>
+<li><strong>Trigger:</strong> Manual build, webhook from Shopify, scheduled builds</li>
+</ul>
+<h4>2.2.2 Shopify UCP Catalog</h4>
+<ul>
+<li><strong>Purpose:</strong> Centralized product data source</li>
+<li><strong>API:</strong> GraphQL Storefront API</li>
+<li><strong>Data Structure:</strong><pre><code class="language-graphql">{
+  products {
+    id
+    title
+    handle
+    description
+    priceRange { minVariantPrice { amount currencyCode } }
+    images { url altText }
+    variants { id title priceV2 availableForSale }
+  }
+}
+</code></pre>
+</li>
+</ul>
+<h4>2.2.3 Client-Side (Browser)</h4>
+<ul>
+<li><strong>UCP Session Manager:</strong> JavaScript module for session tracking</li>
+<li><strong>Consent Management:</strong> UI for user consent preferences</li>
+<li><strong>Event Tracking:</strong> Capture page views, clicks, form submissions</li>
+<li><strong>WebSocket Client:</strong> Receive real-time updates from middleware</li>
+</ul>
+<h4>2.2.4 Middleware (Xano/n8n)</h4>
+<ul>
+<li><strong>Webhook Endpoint:</strong> Receive POST requests from client</li>
+<li><strong>Data Transformation:</strong> Convert client data to Shopify/Google AI formats</li>
+<li><strong>Idempotency:</strong> Prevent duplicate processing</li>
+<li><strong>Orchestration:</strong> Route data to appropriate backend services</li>
+</ul>
+<h4>2.2.5 Shopify Metaobjects</h4>
+<ul>
+<li><strong>Purpose:</strong> Store custom user data</li>
+<li><strong>Schema:</strong>
+<ul>
+<li><code>consent_status: JSON</code></li>
+<li><code>user_history: JSON</code></li>
+<li><code>last_seen: DateTime</code></li>
+</ul>
+</li>
+<li><strong>Association:</strong> Linked to customer records</li>
+</ul>
+<h4>2.2.6 Google AI Data Stream</h4>
+<ul>
+<li><strong>Purpose:</strong> Real-time analytics and ML model training</li>
+<li><strong>Input:</strong> User interaction events</li>
+<li><strong>Output:</strong> Personalization recommendations, analytics dashboards</li>
+</ul>
+<hr>
+<h2>3. Functional Requirements</h2>
+<h3>3.1 Build-Time Requirements</h3>
+<h4>FR-1: GraphQL Data Fetching</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> The 11ty build process MUST fetch product data from Shopify UCP Catalog via GraphQL.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] GraphQL client module created in <code>src/_data/graphqlClient.js</code></li>
+<li>[ ] Products data file created in <code>src/_data/products.js</code></li>
+<li>[ ] Collections data file created in <code>src/_data/collections.js</code></li>
+<li>[ ] Error handling for API failures (return empty array, log error)</li>
+<li>[ ] Environment variables for API credentials (<code>.env</code> file)</li>
+<li>[ ] Support for pagination (fetch all products, not just first 100)</li>
+</ul>
+<p><strong>Implementation Details:</strong></p>
+<pre><code class="language-javascript">// src/_data/graphqlClient.js
+const fetch = require('node-fetch');
+require('dotenv').config();
+
+class GraphQLClient {
+  constructor(endpoint, headers = {}) {
+    this.endpoint = endpoint;
+    this.headers = {
+      'Content-Type': 'application/json',
+      ...headers
+    };
+  }
+
+  async query(query, variables = {}) {
+    const response = await fetch(this.endpoint, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ query, variables })
+    });
+    
+    const result = await response.json();
+    if (result.errors) throw new Error(result.errors[0].message);
+    return result.data;
+  }
+}
+
+module.exports = GraphQLClient;
+</code></pre>
+<h4>FR-2: Parallel Page Generation</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Generate individual product pages in parallel using 11ty pagination.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Pagination configured in product template frontmatter</li>
+<li>[ ] Each product generates to <code>/products/{handle}/index.html</code></li>
+<li>[ ] SEO metadata included (title, description, Open Graph tags)</li>
+<li>[ ] Structured data (JSON-LD) for product schema</li>
+<li>[ ] Images optimized and lazy-loaded</li>
+</ul>
+<p><strong>Implementation Details:</strong></p>
+<pre><code class="language-nunjucks">---
+pagination:
+  data: products
+  size: 1
+  alias: product
+permalink: &quot;/products//&quot;
+---
+</code></pre>
+<h4>FR-3: Incremental Builds</h4>
+<p><strong>Priority:</strong> P1 (High)</p>
+<p><strong>Description:</strong> Support incremental builds that only regenerate changed products.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Cache product data between builds</li>
+<li>[ ] Compare product <code>updatedAt</code> timestamps</li>
+<li>[ ] Only regenerate pages for updated products</li>
+<li>[ ] Build time &lt; 30 seconds for incremental builds</li>
+</ul>
+<h3>3.2 Runtime Requirements</h3>
+<h4>FR-4: UCP Session Management</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Client-side JavaScript module to manage user sessions.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Generate unique session ID on first visit</li>
+<li>[ ] Store session data in <code>sessionStorage</code> or <code>localStorage</code></li>
+<li>[ ] Track user events (page views, clicks, form submissions)</li>
+<li>[ ] Send webhooks to middleware on significant events</li>
+<li>[ ] Session data structure:<pre><code class="language-javascript">{
+  sessionId: &quot;session_123456&quot;,
+  userId: &quot;user_789&quot;,
+  email: &quot;user@example.com&quot;,
+  consentStatus: {
+    analytics: { granted: true, timestamp: &quot;2026-01-14T12:00:00Z&quot; },
+    marketing: { granted: false, timestamp: &quot;2026-01-14T12:00:00Z&quot; }
+  },
+  userHistory: [
+    { timestamp: &quot;2026-01-14T12:01:00Z&quot;, type: &quot;page_view&quot;, page: &quot;/products/widget&quot; }
+  ]
+}
+</code></pre>
+</li>
+</ul>
+<h4>FR-5: Consent Management UI</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> User interface for managing consent preferences.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Consent banner displayed on first visit</li>
+<li>[ ] Checkboxes for different consent purposes (analytics, marketing)</li>
+<li>[ ] Save button to persist preferences</li>
+<li>[ ] Consent stored in session and sent to middleware</li>
+<li>[ ] GDPR/CCPA compliant (explicit opt-in, easy to revoke)</li>
+</ul>
+<h4>FR-6: Event Tracking</h4>
+<p><strong>Priority:</strong> P1 (High)</p>
+<p><strong>Description:</strong> Track user interactions and send to middleware.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Track page views automatically</li>
+<li>[ ] Track button clicks (data-track attribute)</li>
+<li>[ ] Track form submissions</li>
+<li>[ ] Track add-to-cart events</li>
+<li>[ ] Debounce events to prevent spam</li>
+<li>[ ] Respect consent preferences (only track if consent granted)</li>
+</ul>
+<h4>FR-7: WebSocket Real-Time Updates</h4>
+<p><strong>Priority:</strong> P2 (Medium)</p>
+<p><strong>Description:</strong> Receive real-time updates from middleware via WebSocket.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] WebSocket client connects to middleware</li>
+<li>[ ] Authenticate with session ID</li>
+<li>[ ] Listen for personalization events</li>
+<li>[ ] Update UI dynamically (e.g., show recommended products)</li>
+<li>[ ] Reconnect on connection loss</li>
+</ul>
+<h3>3.3 Middleware Requirements</h3>
+<h4>FR-8: Webhook Endpoint</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Xano/n8n webhook endpoint to receive client events.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] POST endpoint at <code>/api/webhook</code></li>
+<li>[ ] Validate request signature (HMAC)</li>
+<li>[ ] Parse JSON payload</li>
+<li>[ ] Return 200 OK immediately (async processing)</li>
+<li>[ ] Rate limiting (max 100 requests/minute per session)</li>
+</ul>
+<h4>FR-9: Data Transformation</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Transform client data to Shopify and Google AI formats.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Map client session data to Shopify customer fields</li>
+<li>[ ] Map events to Google AI event schema</li>
+<li>[ ] Enrich data with IP geolocation</li>
+<li>[ ] Add timestamps in ISO 8601 format</li>
+<li>[ ] Handle missing fields gracefully</li>
+</ul>
+<h4>FR-10: Idempotency</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Prevent duplicate processing of events.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Generate idempotency key: <code>{sessionId}_{eventType}_{timestamp}</code></li>
+<li>[ ] Check database for existing key before processing</li>
+<li>[ ] Return cached result if key exists</li>
+<li>[ ] Store idempotency key and result in database</li>
+<li>[ ] Clean up old keys (&gt; 24 hours)</li>
+</ul>
+<h4>FR-11: Shopify Integration</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Sync user data to Shopify Metaobjects.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Find or create customer by email</li>
+<li>[ ] Create/update Metaobject for user profile</li>
+<li>[ ] Store consent status as JSON</li>
+<li>[ ] Store user history as JSON</li>
+<li>[ ] Update <code>last_seen</code> timestamp</li>
+<li>[ ] Handle Shopify API errors (retry with exponential backoff)</li>
+</ul>
+<h4>FR-12: Google AI Integration</h4>
+<p><strong>Priority:</strong> P1 (High)</p>
+<p><strong>Description:</strong> Stream events to Google AI Data Stream.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Send events to Google AI API</li>
+<li>[ ] Include user ID, session ID, event type, timestamp</li>
+<li>[ ] Batch events (send every 10 events or 30 seconds)</li>
+<li>[ ] Handle API errors (queue for retry)</li>
+</ul>
+<h3>3.4 Webflow Integration Requirements</h3>
+<h4>FR-13: CSS Integration</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Integrate BEM CSS into Webflow custom code.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] CSS copied to Webflow Project Settings → Custom Code → Head</li>
+<li>[ ] Wrapped in <code>&lt;style&gt;</code> tags</li>
+<li>[ ] Google Fonts link included</li>
+<li>[ ] CSS variables preserved</li>
+<li>[ ] No conflicts with Webflow's default styles</li>
+</ul>
+<h4>FR-14: JavaScript Integration</h4>
+<p><strong>Priority:</strong> P0 (Critical)</p>
+<p><strong>Description:</strong> Integrate vanilla JavaScript into Webflow custom code.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] JavaScript copied to Webflow Project Settings → Custom Code → Footer</li>
+<li>[ ] Wrapped in <code>&lt;script&gt;</code> tags</li>
+<li>[ ] All functionality works (mobile menu, tabs, copy buttons)</li>
+<li>[ ] No conflicts with Webflow's scripts</li>
+</ul>
+<h4>FR-15: Component Mapping</h4>
+<p><strong>Priority:</strong> P1 (High)</p>
+<p><strong>Description:</strong> Map HTML structure to Webflow components.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>[ ] Create Webflow symbols for reusable components (header, footer, card)</li>
+<li>[ ] Apply correct class names from BEM CSS</li>
+<li>[ ] Test all interactive elements</li>
+<li>[ ] Document component usage in Webflow</li>
+</ul>
+<hr>
+<h2>4. Non-Functional Requirements</h2>
+<h3>4.1 Performance</h3>
+<h4>NFR-1: Build Performance</h4>
+<ul>
+<li>Build time for 1000 products: &lt; 5 minutes</li>
+<li>Build time for 10,000 products: &lt; 30 minutes</li>
+<li>Incremental build time: &lt; 30 seconds</li>
+</ul>
+<h4>NFR-2: Page Load Performance</h4>
+<ul>
+<li>First Contentful Paint (FCP): &lt; 1.5s</li>
+<li>Largest Contentful Paint (LCP): &lt; 2.5s</li>
+<li>Time to Interactive (TTI): &lt; 3.5s</li>
+<li>Total page size: &lt; 500KB (including images)</li>
+</ul>
+<h4>NFR-3: API Performance</h4>
+<ul>
+<li>GraphQL query response time: &lt; 2s</li>
+<li>Webhook processing time: &lt; 500ms</li>
+<li>WebSocket message latency: &lt; 100ms</li>
+</ul>
+<h3>4.2 Scalability</h3>
+<h4>NFR-4: Product Catalog Scale</h4>
+<ul>
+<li>Support up to 100,000 products</li>
+<li>Support up to 10,000 collections</li>
+<li>Support up to 100 product variants per product</li>
+</ul>
+<h4>NFR-5: User Traffic Scale</h4>
+<ul>
+<li>Support 10,000 concurrent users</li>
+<li>Support 1,000,000 page views per day</li>
+<li>Support 100,000 webhook events per hour</li>
+</ul>
+<h3>4.3 Security</h3>
+<h4>NFR-6: Data Encryption</h4>
+<ul>
+<li>All data in transit MUST use TLS 1.3</li>
+<li>Sensitive data at rest MUST be encrypted (AES-256)</li>
+<li>API keys MUST be stored in environment variables</li>
+</ul>
+<h4>NFR-7: Authentication</h4>
+<ul>
+<li>Shopify API: Use Storefront Access Token</li>
+<li>Middleware webhooks: Use HMAC signature verification</li>
+<li>Google AI API: Use OAuth 2.0 with service account</li>
+</ul>
+<h4>NFR-8: Consent Management</h4>
+<ul>
+<li>GDPR compliant: Explicit opt-in required</li>
+<li>CCPA compliant: Easy opt-out mechanism</li>
+<li>Consent stored with timestamp and IP address</li>
+<li>Data processing stops immediately on consent revocation</li>
+</ul>
+<h3>4.4 Reliability</h3>
+<h4>NFR-9: Availability</h4>
+<ul>
+<li>Static site: 99.99% uptime (CDN)</li>
+<li>Middleware: 99.9% uptime</li>
+<li>Graceful degradation if middleware is down</li>
+</ul>
+<h4>NFR-10: Error Handling</h4>
+<ul>
+<li>All API calls MUST have error handling</li>
+<li>Failed builds MUST not deploy broken sites</li>
+<li>Failed webhooks MUST be queued for retry (max 3 attempts)</li>
+</ul>
+<h3>4.5 Maintainability</h3>
+<h4>NFR-11: Code Quality</h4>
+<ul>
+<li>CSS: BEM methodology, max 10,000 lines</li>
+<li>JavaScript: ESLint compliant, max 5,000 lines</li>
+<li>Templates: DRY principle, max 500 lines per file</li>
+</ul>
+<h4>NFR-12: Documentation</h4>
+<ul>
+<li>README with setup instructions</li>
+<li>Integration guide for Webflow and Shopify</li>
+<li>API documentation for middleware endpoints</li>
+<li>Code comments for complex logic</li>
+</ul>
+<hr>
+<h2>5. Data Models</h2>
+<h3>5.1 Product Data Model (Shopify UCP)</h3>
+<pre><code class="language-graphql">type Product {
+  id: ID!
+  title: String!
+  handle: String!
+  description: String
+  descriptionHtml: String
+  priceRange: ProductPriceRange!
+  images(first: Int): ImageConnection!
+  variants(first: Int): ProductVariantConnection!
+  collections(first: Int): CollectionConnection!
+  tags: [String!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ProductPriceRange {
+  minVariantPrice: MoneyV2!
+  maxVariantPrice: MoneyV2!
+}
+
+type MoneyV2 {
+  amount: Decimal!
+  currencyCode: CurrencyCode!
+}
+</code></pre>
+<h3>5.2 Session Data Model (Client-Side)</h3>
+<pre><code class="language-typescript">interface UCPSession {
+  sessionId: string;
+  userId?: string;
+  email?: string;
+  consentStatus: {
+    [purpose: string]: {
+      granted: boolean;
+      timestamp: string; // ISO 8601
+    };
+  };
+  userHistory: UCPEvent[];
+  createdAt: string; // ISO 8601
+  lastActive: string; // ISO 8601
+}
+
+interface UCPEvent {
+  timestamp: string; // ISO 8601
+  type: 'page_view' | 'click' | 'form_submit' | 'add_to_cart';
+  page: string;
+  data?: Record&lt;string, any&gt;;
+}
+</code></pre>
+<h3>5.3 Metaobject Schema (Shopify)</h3>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;UCP User Profile&quot;,
+  &quot;type&quot;: &quot;ucp_user_profile&quot;,
+  &quot;fields&quot;: [
+    {
+      &quot;key&quot;: &quot;consent_status&quot;,
+      &quot;type&quot;: &quot;json&quot;,
+      &quot;description&quot;: &quot;User consent preferences&quot;
+    },
+    {
+      &quot;key&quot;: &quot;user_history&quot;,
+      &quot;type&quot;: &quot;json&quot;,
+      &quot;description&quot;: &quot;User interaction history&quot;
+    },
+    {
+      &quot;key&quot;: &quot;last_seen&quot;,
+      &quot;type&quot;: &quot;date_time&quot;,
+      &quot;description&quot;: &quot;Last active timestamp&quot;
+    }
+  ]
+}
+</code></pre>
+<h3>5.4 Google AI Event Schema</h3>
+<pre><code class="language-json">{
+  &quot;user_id&quot;: &quot;user_789&quot;,
+  &quot;session_id&quot;: &quot;session_123456&quot;,
+  &quot;event_type&quot;: &quot;page_view&quot;,
+  &quot;event_timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot;,
+  &quot;event_data&quot;: {
+    &quot;page&quot;: &quot;/products/widget&quot;,
+    &quot;referrer&quot;: &quot;https://google.com&quot;,
+    &quot;device_type&quot;: &quot;mobile&quot;
+  }
+}
+</code></pre>
+<hr>
+<h2>6. API Specifications</h2>
+<h3>6.1 Shopify GraphQL API</h3>
+<p><strong>Endpoint:</strong> <code>https://{shop}.myshopify.com/api/2024-01/graphql.json</code></p>
+<p><strong>Authentication:</strong> <code>X-Shopify-Storefront-Access-Token: {token}</code></p>
+<p><strong>Query: Fetch Products</strong></p>
+<pre><code class="language-graphql">query GetProducts($first: Int!, $after: String) {
+  products(first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        id
+        title
+        handle
+        description
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 5) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<h3>6.2 Middleware Webhook API</h3>
+<p><strong>Endpoint:</strong> <code>POST https://your-xano.xano.io/api/webhook</code></p>
+<p><strong>Authentication:</strong> <code>X-Webhook-Signature: {hmac_signature}</code></p>
+<p><strong>Request Body:</strong></p>
+<pre><code class="language-json">{
+  &quot;eventType&quot;: &quot;consent_updated&quot;,
+  &quot;session&quot;: {
+    &quot;sessionId&quot;: &quot;session_123456&quot;,
+    &quot;email&quot;: &quot;user@example.com&quot;,
+    &quot;consentStatus&quot;: {
+      &quot;analytics&quot;: { &quot;granted&quot;: true, &quot;timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot; }
+    },
+    &quot;userHistory&quot;: []
+  }
+}
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;customerId&quot;: &quot;gid://shopify/Customer/123456&quot;
+}
+</code></pre>
+<h3>6.3 Google AI Data Stream API</h3>
+<p><strong>Endpoint:</strong> <code>POST https://datastream.googleapis.com/v1/projects/{project}/streams/{stream}:write</code></p>
+<p><strong>Authentication:</strong> <code>Authorization: Bearer {oauth_token}</code></p>
+<p><strong>Request Body:</strong></p>
+<pre><code class="language-json">{
+  &quot;events&quot;: [
+    {
+      &quot;user_id&quot;: &quot;user_789&quot;,
+      &quot;session_id&quot;: &quot;session_123456&quot;,
+      &quot;event_type&quot;: &quot;page_view&quot;,
+      &quot;event_timestamp&quot;: &quot;2026-01-14T12:00:00Z&quot;,
+      &quot;event_data&quot;: {
+        &quot;page&quot;: &quot;/products/widget&quot;
+      }
+    }
+  ]
+}
+</code></pre>
+<hr>
+<h2>7. User Stories</h2>
+<h3>7.1 Developer User Stories</h3>
+<p><strong>US-1:</strong> As a developer, I want to fetch product data from Shopify UCP Catalog so that I can generate static product pages.</p>
+<p><strong>US-2:</strong> As a developer, I want to use 11ty pagination so that I can generate individual pages for each product in parallel.</p>
+<p><strong>US-3:</strong> As a developer, I want to integrate the static site into Webflow so that non-technical users can manage the front-end.</p>
+<h3>7.2 End User Stories</h3>
+<p><strong>US-4:</strong> As a shopper, I want to browse products on a fast-loading website so that I can find what I need quickly.</p>
+<p><strong>US-5:</strong> As a shopper, I want to control my data consent preferences so that I feel in control of my privacy.</p>
+<p><strong>US-6:</strong> As a shopper, I want to receive personalized product recommendations so that I discover relevant items.</p>
+<h3>7.3 Merchant User Stories</h3>
+<p><strong>US-7:</strong> As a merchant, I want product data to sync automatically from Shopify so that my website is always up-to-date.</p>
+<p><strong>US-8:</strong> As a merchant, I want to track user behavior so that I can optimize my marketing campaigns.</p>
+<p><strong>US-9:</strong> As a merchant, I want to comply with GDPR/CCPA so that I avoid legal issues.</p>
+<hr>
+<h2>8. Implementation Phases</h2>
+<h3>Phase 1: Foundation (Week 1)</h3>
+<ul>
+<li>[ ] Set up 11ty project structure</li>
+<li>[ ] Create GraphQL client module</li>
+<li>[ ] Implement product data fetching</li>
+<li>[ ] Create base templates (layout, header, footer)</li>
+<li>[ ] Implement BEM CSS</li>
+</ul>
+<h3>Phase 2: Page Generation (Week 2)</h3>
+<ul>
+<li>[ ] Implement pagination for product pages</li>
+<li>[ ] Add SEO metadata</li>
+<li>[ ] Add structured data (JSON-LD)</li>
+<li>[ ] Optimize images</li>
+<li>[ ] Test build performance</li>
+</ul>
+<h3>Phase 3: Client-Side Functionality (Week 3)</h3>
+<ul>
+<li>[ ] Implement UCP Session Manager</li>
+<li>[ ] Create consent management UI</li>
+<li>[ ] Implement event tracking</li>
+<li>[ ] Add WebSocket client</li>
+<li>[ ] Test in multiple browsers</li>
+</ul>
+<h3>Phase 4: Middleware Integration (Week 4)</h3>
+<ul>
+<li>[ ] Set up Xano/n8n webhook endpoint</li>
+<li>[ ] Implement data transformation</li>
+<li>[ ] Add idempotency checks</li>
+<li>[ ] Integrate with Shopify Metaobjects</li>
+<li>[ ] Integrate with Google AI</li>
+</ul>
+<h3>Phase 5: Webflow Integration (Week 5)</h3>
+<ul>
+<li>[ ] Copy CSS to Webflow custom code</li>
+<li>[ ] Copy JavaScript to Webflow custom code</li>
+<li>[ ] Create Webflow components</li>
+<li>[ ] Test all functionality in Webflow</li>
+<li>[ ] Document integration process</li>
+</ul>
+<h3>Phase 6: Testing &amp; Launch (Week 6)</h3>
+<ul>
+<li>[ ] Performance testing (Lighthouse, WebPageTest)</li>
+<li>[ ] Security testing (OWASP Top 10)</li>
+<li>[ ] User acceptance testing</li>
+<li>[ ] Fix bugs and optimize</li>
+<li>[ ] Deploy to production</li>
+</ul>
+<hr>
+<h2>9. Success Metrics</h2>
+<h3>9.1 Technical Metrics</h3>
+<ul>
+<li><strong>Build Time:</strong> &lt; 5 minutes for 1000 products</li>
+<li><strong>Page Load Speed:</strong> FCP &lt; 1.5s, LCP &lt; 2.5s</li>
+<li><strong>SEO Score:</strong> Lighthouse SEO &gt; 95</li>
+<li><strong>Error Rate:</strong> &lt; 0.1% for API calls</li>
+<li><strong>Uptime:</strong> &gt; 99.9% for static site</li>
+</ul>
+<h3>9.2 Business Metrics</h3>
+<ul>
+<li><strong>Conversion Rate:</strong> +15% increase</li>
+<li><strong>Bounce Rate:</strong> -20% decrease</li>
+<li><strong>Average Session Duration:</strong> +30% increase</li>
+<li><strong>Pages Per Session:</strong> +25% increase</li>
+<li><strong>Consent Opt-In Rate:</strong> &gt; 60%</li>
+</ul>
+<h3>9.3 User Experience Metrics</h3>
+<ul>
+<li><strong>Time to First Byte (TTFB):</strong> &lt; 200ms</li>
+<li><strong>Cumulative Layout Shift (CLS):</strong> &lt; 0.1</li>
+<li><strong>First Input Delay (FID):</strong> &lt; 100ms</li>
+<li><strong>Mobile Usability Score:</strong> &gt; 95</li>
+</ul>
+<hr>
+<h2>10. Risks &amp; Mitigations</h2>
+<h3>Risk 1: Shopify API Rate Limits</h3>
+<p><strong>Impact:</strong> High<br>
+<strong>Probability:</strong> Medium<br>
+<strong>Mitigation:</strong> Implement request batching, caching, and exponential backoff</p>
+<h3>Risk 2: Build Time Exceeds Limits</h3>
+<p><strong>Impact:</strong> High<br>
+<strong>Probability:</strong> Medium<br>
+<strong>Mitigation:</strong> Implement incremental builds, optimize GraphQL queries</p>
+<h3>Risk 3: Consent Compliance Issues</h3>
+<p><strong>Impact:</strong> Critical<br>
+<strong>Probability:</strong> Low<br>
+<strong>Mitigation:</strong> Legal review, use proven consent management libraries</p>
+<h3>Risk 4: WebSocket Connection Failures</h3>
+<p><strong>Impact:</strong> Medium<br>
+<strong>Probability:</strong> Medium<br>
+<strong>Mitigation:</strong> Implement reconnection logic, fallback to polling</p>
+<h3>Risk 5: Data Sync Delays</h3>
+<p><strong>Impact:</strong> Medium<br>
+<strong>Probability:</strong> High<br>
+<strong>Mitigation:</strong> Set expectations for eventual consistency, show last updated timestamp</p>
+<hr>
+<h2>11. Appendix</h2>
+<h3>11.1 Glossary</h3>
+<ul>
+<li><strong>11ty (Eleventy):</strong> Static site generator written in JavaScript</li>
+<li><strong>UCP:</strong> Universal Commerce Protocol</li>
+<li><strong>BEM:</strong> Block Element Modifier (CSS methodology)</li>
+<li><strong>GraphQL:</strong> Query language for APIs</li>
+<li><strong>Metaobject:</strong> Custom data structure in Shopify</li>
+<li><strong>Idempotency:</strong> Property ensuring operations can be repeated safely</li>
+</ul>
+<h3>11.2 References</h3>
+<ul>
+<li><a href="https://shopify.dev/docs/api/storefront">Shopify Storefront API Documentation</a></li>
+<li><a href="https://www.11ty.dev/docs/">Eleventy Documentation</a></li>
+<li><a href="https://cloud.google.com/datastream/docs">Google AI Data Stream API</a></li>
+<li><a href="https://getbem.com/">BEM Methodology</a></li>
+<li><a href="https://gdpr.eu/">GDPR Compliance Guide</a></li>
+</ul>
+<h3>11.3 Revision History</h3>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Date</th>
+<th>Author</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0</td>
+<td>2026-01-14</td>
+<td>Manus AI</td>
+<td>Initial PRD creation</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>12. Claude Implementation Prompt</h2>
+<p><strong>Use this prompt with Claude to implement the system:</strong></p>
+<pre><code>I need you to build a complete e-commerce knowledge base system with the following components:
+
+1. **11ty Static Site Generator:**
+   - Fetch product data from Shopify UCP Catalog via GraphQL
+   - Generate static HTML pages for each product using pagination
+   - Use BEM CSS methodology (no Tailwind)
+   - Include vanilla JavaScript (no frameworks)
+   - IBM Plex fonts for typography
+
+2. **Client-Side UCP Session Manager:**
+   - Track user sessions in sessionStorage
+   - Capture user events (page views, clicks)
+   - Manage consent preferences
+   - Send webhooks to middleware
+
+3. **Middleware (Xano/n8n):**
+   - Webhook endpoint to receive client events
+   - Transform data for Shopify and Google AI
+   - Implement idempotency checks
+   - Sync to Shopify Metaobjects
+   - Stream to Google AI Data Stream
+
+4. **Webflow Integration:**
+   - CSS and JS that can be copied into Webflow custom code
+   - HTML structure that maps to Webflow components
+   - Full integration guide
+
+Please follow the PRD specifications exactly, including:
+- All functional requirements (FR-1 through FR-15)
+- Non-functional requirements (performance, security, scalability)
+- Data models and API specifications
+- BEM CSS naming conventions
+- Vanilla JavaScript (no jQuery or other libraries)
+
+Deliverables:
+1. Complete 11ty project with source code
+2. Built static site ready for deployment
+3. Integration guide for Webflow and Shopify
+4. README with setup instructions
+5. All code should be production-ready with error handling
+
+Start by setting up the 11ty project structure, then implement each component following the implementation phases outlined in the PRD.
+</code></pre>
+<hr>
+<p><strong>END OF PRD</strong></p>

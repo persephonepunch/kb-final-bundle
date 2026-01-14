@@ -1,0 +1,285 @@
+---
+layout: layouts/base.njk
+title: 11ty GraphQL
+permalink: /eleventy-graphql/
+---
+
+<div class="page-content">
+  <div class="page-header">
+    <h1 class="page-title">11ty GraphQL Directives</h1>
+    <p class="page-description">
+      Parallel page generation with Eleventy and GraphQL directives for building static sites with dynamic data from Shopify UCP Catalog and other sources.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Overview</h2>
+    <p class="section-text">
+      Eleventy (11ty) is a powerful static site generator that can fetch data from GraphQL APIs at build time. This approach combines the performance benefits of static sites with the flexibility of dynamic data sources, making it ideal for e-commerce catalogs, product listings, and content-heavy applications.
+    </p>
+    <div class="card">
+      <h3 class="card-title">Key Benefits</h3>
+      <ul class="benefits-list">
+        <li>
+          <span class="benefit-bullet">▪</span>
+          <strong>Build-time Data Fetching:</strong> Query GraphQL APIs during the build process, generating static HTML pages with fresh data
+        </li>
+        <li>
+          <span class="benefit-bullet">▪</span>
+          <strong>Parallel Processing:</strong> Generate multiple pages concurrently for improved build performance
+        </li>
+        <li>
+          <span class="benefit-bullet">▪</span>
+          <strong>Type Safety:</strong> Leverage GraphQL's type system for predictable data structures
+        </li>
+        <li>
+          <span class="benefit-bullet">▪</span>
+          <strong>SEO Optimization:</strong> All content is pre-rendered, ensuring excellent search engine visibility
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Project Setup</h2>
+    <p class="section-text">
+      Install the required dependencies for your 11ty project with GraphQL support.
+    </p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-language">bash</span>
+        <button class="copy-button" data-copy="setup">
+          <span class="copy-icon">📋</span>
+          Copy
+        </button>
+      </div>
+      <pre class="code-content" id="code-setup"><code># Create new 11ty project
+mkdir my-11ty-site && cd my-11ty-site
+npm init -y
+
+# Install dependencies
+npm install @11ty/eleventy dotenv node-fetch@2
+
+# Create directory structure
+mkdir -p src/_data src/_includes src/css</code></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">GraphQL Client Configuration</h2>
+    <p class="section-text">
+      Create a GraphQL client module to handle API requests to Shopify or other GraphQL endpoints.
+    </p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-language">src/_data/graphqlClient.js</span>
+        <button class="copy-button" data-copy="graphql-client">
+          <span class="copy-icon">📋</span>
+          Copy
+        </button>
+      </div>
+      <pre class="code-content" id="code-graphql-client"><code>const fetch = require('node-fetch');
+require('dotenv').config();
+
+class GraphQLClient {
+  constructor(endpoint, headers = {}) {
+    this.endpoint = endpoint;
+    this.headers = {
+      'Content-Type': 'application/json',
+      ...headers
+    };
+  }
+
+  async query(query, variables = {}) {
+    try {
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify({ query, variables })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.errors) {
+        console.error('GraphQL errors:', result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('GraphQL query failed:', error);
+      throw error;
+    }
+  }
+}
+
+module.exports = GraphQLClient;</code></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">11ty Data Files</h2>
+    <p class="section-text">
+      Create data files that fetch from GraphQL APIs at build time. These files export async functions that return data to your templates.
+    </p>
+    
+    <div class="code-section">
+      <h3 class="code-section-subtitle">Fetch Products from Shopify</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-language">src/_data/products.js</span>
+          <button class="copy-button" data-copy="products-data">
+            <span class="copy-icon">📋</span>
+            Copy
+          </button>
+        </div>
+        <pre class="code-content" id="code-products-data"><code>const GraphQLClient = require('./graphqlClient');
+
+module.exports = async function() {
+  const client = new GraphQLClient(
+    process.env.SHOPIFY_STOREFRONT_URL,
+    {
+      'X-Shopify-Storefront-Access-Token': process.env.SHOPIFY_ACCESS_TOKEN
+    }
+  );
+
+  const query = `
+    query GetProducts($first: Int!) {
+      products(first: $first) {
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            images(first: 1) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const data = await client.query(query, { first: 100 });
+    return data.products.edges.map(edge => edge.node);
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    return [];
+  }
+};</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Parallel Page Generation</h2>
+    <p class="section-text">
+      Use 11ty's pagination feature to generate individual pages for each product or collection item in parallel.
+    </p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-language">src/products.njk</span>
+        <button class="copy-button" data-copy="pagination">
+          <span class="copy-icon">📋</span>
+          Copy
+        </button>
+      </div>
+      <pre class="code-content" id="code-pagination"><code>---
+pagination:
+  data: products
+  size: 1
+  alias: product
+permalink: "/products/{{ product.handle }}/"
+---
+
+&lt;h1&gt;{{ product.title }}&lt;/h1&gt;
+&lt;div class="product-detail"&gt;
+  &lt;img src="{{ product.images.edges[0].node.url }}" alt="{{ product.title }}"&gt;
+  &lt;p&gt;{{ product.description }}&lt;/p&gt;
+  &lt;p class="price"&gt;
+    {{ product.priceRange.minVariantPrice.amount }} 
+    {{ product.priceRange.minVariantPrice.currencyCode }}
+  &lt;/p&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Build Process</h2>
+    <div class="card">
+      <h3 class="card-title">How It Works</h3>
+      <ol class="build-steps">
+        <li>
+          <span class="step-number">01.</span>
+          <span>11ty runs all data files in the <code>_data</code> directory</span>
+        </li>
+        <li>
+          <span class="step-number">02.</span>
+          <span>GraphQL queries are executed, fetching data from APIs</span>
+        </li>
+        <li>
+          <span class="step-number">03.</span>
+          <span>Data is cached and made available to all templates</span>
+        </li>
+        <li>
+          <span class="step-number">04.</span>
+          <span>Templates are processed in parallel, generating static HTML files</span>
+        </li>
+        <li>
+          <span class="step-number">05.</span>
+          <span>Static site is output to the <code>_site</code> directory</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Best Practices</h2>
+    <div class="best-practices-grid">
+      <div class="practice-card">
+        <h3 class="practice-title">Caching Strategy</h3>
+        <p class="practice-description">
+          Implement caching for GraphQL responses to reduce API calls during development. Use environment variables to control cache behavior in production vs. development.
+        </p>
+      </div>
+
+      <div class="practice-card">
+        <h3 class="practice-title">Error Handling</h3>
+        <p class="practice-description">
+          Always implement robust error handling in data files. Return fallback data or empty arrays to prevent build failures when APIs are unavailable.
+        </p>
+      </div>
+
+      <div class="practice-card">
+        <h3 class="practice-title">Incremental Builds</h3>
+        <p class="practice-description">
+          For large catalogs, consider implementing incremental builds that only regenerate pages for changed products. This significantly reduces build times.
+        </p>
+      </div>
+
+      <div class="practice-card">
+        <h3 class="practice-title">Rate Limiting</h3>
+        <p class="practice-description">
+          Respect API rate limits by implementing request throttling and batching. Use GraphQL's ability to fetch multiple resources in a single query.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
