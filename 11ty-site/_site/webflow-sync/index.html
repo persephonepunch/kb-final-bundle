@@ -359,6 +359,316 @@ module.exports = async function() {
 }</code></pre>
           </div>
         </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">User Query with Full Data</h2>
+          <p class="code-section-description">
+            Complete GraphQL query for fetching customer/user data with consent status, session history, and metafields.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">GraphQL (Shopify Admin API)</span>
+              <button class="copy-button" data-copy="user-query">
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-user-query"><code># User/Customer Query with Full Data
+# Requires Shopify Admin API access
+
+query GetCustomer($id: ID!) {
+  customer(id: $id) {
+    id
+    email
+    firstName
+    lastName
+    displayName
+    phone
+    createdAt
+    updatedAt
+    state
+    tags
+    note
+    verifiedEmail
+    validEmailAddress
+
+    # Consent Status
+    emailMarketingConsent {
+      marketingState
+      marketingOptInLevel
+      consentUpdatedAt
+    }
+    smsMarketingConsent {
+      marketingState
+      marketingOptInLevel
+      consentUpdatedAt
+    }
+
+    # Default Address
+    defaultAddress {
+      id
+      address1
+      address2
+      city
+      province
+      provinceCode
+      country
+      countryCode
+      zip
+      phone
+    }
+
+    # All Addresses
+    addresses(first: 10) {
+      id
+      address1
+      city
+      country
+      zip
+    }
+
+    # Order History
+    orders(first: 10, sortKey: CREATED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          name
+          createdAt
+          totalPriceSet {
+            shopMoney { amount, currencyCode }
+          }
+          fulfillmentStatus
+          financialStatus
+        }
+      }
+    }
+
+    # UCP Metafields (Custom User Data)
+    metafields(first: 20, namespace: "ucp") {
+      edges {
+        node {
+          id
+          namespace
+          key
+          value
+          type
+        }
+      }
+    }
+  }
+}
+
+# Mutation: Update Customer with Consent and UCP Data
+mutation UpdateCustomerWithUCP($input: CustomerInput!) {
+  customerUpdate(input: $input) {
+    customer {
+      id
+      email
+      tags
+      metafields(first: 20, namespace: "ucp") {
+        edges {
+          node { key, value }
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+
+# Variables for Update Mutation
+# {
+#   "input": {
+#     "id": "gid://shopify/Customer/123456789",
+#     "tags": ["ucp-user", "analytics-consent", "marketing-consent"],
+#     "metafields": [
+#       {
+#         "namespace": "ucp",
+#         "key": "consent_status",
+#         "value": "{\"analytics\":true,\"marketing\":true}",
+#         "type": "json"
+#       },
+#       {
+#         "namespace": "ucp",
+#         "key": "session_id",
+#         "value": "session_123456789",
+#         "type": "single_line_text_field"
+#       },
+#       {
+#         "namespace": "ucp",
+#         "key": "last_event",
+#         "value": "{\"type\":\"page_view\",\"timestamp\":\"2026-01-14T12:00:00Z\"}",
+#         "type": "json"
+#       },
+#       {
+#         "namespace": "ucp",
+#         "key": "user_tags",
+#         "value": "[\"returning-customer\",\"high-engagement\"]",
+#         "type": "json"
+#       }
+#     ]
+#   }
+# }</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">User Data Fetcher</h2>
+          <p class="code-section-description">
+            JavaScript module to fetch and sync user data with Google Session integration.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript (src/_data/users.js)</span>
+              <button class="copy-button" data-copy="user-fetcher">
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-user-fetcher"><code>const fetch = require('node-fetch');
+require('dotenv').config();
+
+const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
+const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+const API_VERSION = process.env.SHOPIFY_API_VERSION || '2024-01';
+
+const ADMIN_ENDPOINT = `https://${SHOPIFY_DOMAIN}/admin/api/${API_VERSION}/graphql.json`;
+
+async function adminQuery(query, variables = {}) {
+  const response = await fetch(ADMIN_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': ADMIN_TOKEN,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  const json = await response.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  return json.data;
+}
+
+async function fetchCustomerWithUCP(customerId) {
+  const query = `
+    query GetCustomerUCP($id: ID!) {
+      customer(id: $id) {
+        id
+        email
+        firstName
+        lastName
+        tags
+        emailMarketingConsent {
+          marketingState
+          consentUpdatedAt
+        }
+        metafields(first: 20, namespace: "ucp") {
+          edges {
+            node { key, value, type }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await adminQuery(query, { id: customerId });
+  return parseCustomerData(data.customer);
+}
+
+function parseCustomerData(customer) {
+  const metafields = {};
+  customer.metafields?.edges?.forEach(({ node }) => {
+    try {
+      metafields[node.key] = node.type === 'json'
+        ? JSON.parse(node.value)
+        : node.value;
+    } catch {
+      metafields[node.key] = node.value;
+    }
+  });
+
+  return {
+    userId: customer.id,
+    email: customer.email,
+    name: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+    tags: customer.tags || [],
+    consent: {
+      marketing: customer.emailMarketingConsent?.marketingState === 'SUBSCRIBED',
+      timestamp: customer.emailMarketingConsent?.consentUpdatedAt,
+    },
+    ucp: {
+      sessionId: metafields.session_id || null,
+      consentStatus: metafields.consent_status || {},
+      lastEvent: metafields.last_event || null,
+      userTags: metafields.user_tags || [],
+    },
+  };
+}
+
+async function updateCustomerUCP(customerId, ucpData) {
+  const mutation = `
+    mutation UpdateCustomerUCP($input: CustomerInput!) {
+      customerUpdate(input: $input) {
+        customer { id, tags }
+        userErrors { field, message }
+      }
+    }
+  `;
+
+  const input = {
+    id: customerId,
+    tags: ucpData.tags || [],
+    metafields: [
+      {
+        namespace: 'ucp',
+        key: 'consent_status',
+        value: JSON.stringify(ucpData.consent || {}),
+        type: 'json',
+      },
+      {
+        namespace: 'ucp',
+        key: 'session_id',
+        value: ucpData.sessionId || '',
+        type: 'single_line_text_field',
+      },
+      {
+        namespace: 'ucp',
+        key: 'last_event',
+        value: JSON.stringify(ucpData.lastEvent || {}),
+        type: 'json',
+      },
+      {
+        namespace: 'ucp',
+        key: 'user_tags',
+        value: JSON.stringify(ucpData.userTags || []),
+        type: 'json',
+      },
+      {
+        namespace: 'ucp',
+        key: 'idempotency_key',
+        value: `${customerId}_${Date.now()}`,
+        type: 'single_line_text_field',
+      },
+    ],
+  };
+
+  const data = await adminQuery(mutation, { input });
+
+  if (data.customerUpdate.userErrors?.length > 0) {
+    throw new Error(JSON.stringify(data.customerUpdate.userErrors));
+  }
+
+  return data.customerUpdate.customer;
+}
+
+module.exports = {
+  fetchCustomerWithUCP,
+  updateCustomerUCP,
+  parseCustomerData,
+  adminQuery,
+};</code></pre>
+          </div>
+        </div>
       </div>
 
       <!-- Webflow API Tab -->
