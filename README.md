@@ -107,15 +107,26 @@ Copy-paste-ready prompt for LLMs (Claude, GPT-4) to build the entire system from
 - Configuration templates
 - Testing and deployment instructions
 
+### 6. 11TY_WEBFLOW_GRAPHQL_SYNC.md (NEW)
+Complete implementation guide for using 11ty as a build-time GraphQL data layer that syncs to Webflow CMS:
+- Architecture: 11ty fetches Shopify data via GraphQL → transforms → syncs to Webflow CMS
+- Full Shopify GraphQL client with pagination
+- Webflow CMS API wrapper with rate limiting
+- Schema mapping (Shopify → Webflow fields)
+- Sync orchestration script with incremental updates
+- CI/CD integration (GitHub Actions)
+- Runtime integration code for Webflow
+
 ## 🎨 Site Features
 
 The knowledge base website includes:
 
-- **6 Documentation Pages:**
+- **7 Documentation Pages:**
   - Overview (Home)
   - Architecture
   - Implementation
   - 11ty GraphQL Directives
+  - 11ty → Webflow Sync (NEW)
   - Claude PRD
   - Flow Charts
 
@@ -215,6 +226,6 @@ This project is provided as-is for educational and commercial use.
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** January 14, 2025  
-**Built with:** Eleventy 2.0.1, Vanilla CSS/JS, IBM Plex fonts
+**Version:** 1.1.0
+**Last Updated:** January 14, 2026
+**Built with:** Eleventy 3.0, Vanilla CSS/JS, IBM Plex fonts

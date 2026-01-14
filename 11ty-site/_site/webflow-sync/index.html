@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11ty → Webflow Sync | Webflow Integration KB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="/" class="logo">
+          <div class="logo-icon">KB</div>
+          <span class="logo-text">Integration Docs</span>
+        </a>
+        
+        <nav class="nav-desktop">
+          <a href="/" class="nav-link ">
+            <span class="nav-icon">📖</span>
+            Overview
+          </a>
+          <a href="/architecture/" class="nav-link ">
+            <span class="nav-icon">🏗️</span>
+            Architecture
+          </a>
+          <a href="/implementation/" class="nav-link ">
+            <span class="nav-icon">💻</span>
+            Implementation
+          </a>
+          <a href="/eleventy-graphql/" class="nav-link ">
+            <span class="nav-icon">📄</span>
+            11ty GraphQL
+          </a>
+          <a href="/webflow-sync/" class="nav-link active">
+            <span class="nav-icon">🔄</span>
+            Webflow Sync
+          </a>
+          <a href="/prd/" class="nav-link ">
+            <span class="nav-icon">📋</span>
+            Claude PRD
+          </a>
+          <a href="/flow-chart/" class="nav-link ">
+            <span class="nav-icon">📊</span>
+            Flow Charts
+          </a>
+        </nav>
+      </div>
+      
+      <div class="header-right">
+        <div class="search-container">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search documentation...">
+          <span class="search-icon">🔍</span>
+        </div>
+        
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+          <span class="hamburger"></span>
+        </button>
+      </div>
+    </div>
+    
+    <nav class="nav-mobile" id="mobileNav">
+      <a href="/" class="nav-link-mobile">
+        <span class="nav-icon">📖</span>
+        Overview
+      </a>
+      <a href="/architecture/" class="nav-link-mobile">
+        <span class="nav-icon">🏗️</span>
+        Architecture
+      </a>
+      <a href="/implementation/" class="nav-link-mobile">
+        <span class="nav-icon">💻</span>
+        Implementation
+      </a>
+      <a href="/eleventy-graphql/" class="nav-link-mobile">
+        <span class="nav-icon">📄</span>
+        11ty GraphQL
+      </a>
+      <a href="/webflow-sync/" class="nav-link-mobile">
+        <span class="nav-icon">🔄</span>
+        Webflow Sync
+      </a>
+      <a href="/prd/" class="nav-link-mobile">
+        <span class="nav-icon">📋</span>
+        Claude PRD
+      </a>
+      <a href="/flow-chart/" class="nav-link-mobile">
+        <span class="nav-icon">📊</span>
+        Flow Charts
+      </a>
+    </nav>
+  </div>
+</header>
+
+  
+  <main class="main-content">
+    <div class="container">
+      
+<div class="page-content">
+  <div class="page-header">
+    <h1 class="page-title">11ty → Webflow CMS Sync</h1>
+    <p class="page-description">
+      Use Eleventy as a build-time GraphQL data orchestrator that syncs content to Webflow CMS, enabling a powerful hybrid architecture.
+    </p>
+  </div>
+
+  <div class="tabs-container">
+    <div class="tabs-nav">
+      <button class="tab-button active" data-tab="architecture">Architecture</button>
+      <button class="tab-button" data-tab="shopify-graphql">Shopify GraphQL</button>
+      <button class="tab-button" data-tab="webflow-api">Webflow API</button>
+      <button class="tab-button" data-tab="sync-script">Sync Script</button>
+      <button class="tab-button" data-tab="cicd">CI/CD</button>
+    </div>
+
+    <div class="tabs-content">
+      <!-- Architecture Tab -->
+      <div class="tab-panel active" id="tab-architecture">
+        <div class="code-section">
+          <h2 class="code-section-title">Hybrid Architecture Overview</h2>
+          <p class="code-section-description">
+            11ty fetches data via GraphQL at build time, transforms it, and syncs to Webflow CMS. Webflow handles visual presentation while runtime interactions go through middleware.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">Architecture Diagram</span>
+            </div>
+            <pre class="code-content"><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                              BUILD TIME                                  │
+│                                                                         │
+│   ┌──────────────┐      ┌──────────────┐      ┌──────────────────────┐ │
+│   │   Shopify    │      │    11ty      │      │    Webflow CMS       │ │
+│   │  GraphQL API │─────▶│  Data Layer  │─────▶│    (via REST API)    │ │
+│   └──────────────┘      └──────────────┘      └──────────────────────┘ │
+│          │                     │                        │               │
+│          │              Transform &                     │               │
+│          │              Map Schema                      │               │
+│          ▼                     ▼                        ▼               │
+│   Products, Collections    _data/*.js           CMS Collections        │
+│   Customers, Content       templates            Published Site         │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              RUNTIME                                     │
+│                                                                         │
+│   ┌──────────────┐      ┌──────────────┐      ┌──────────────────────┐ │
+│   │   Webflow    │      │  Xano/n8n    │      │   Shopify Admin +    │ │
+│   │   Client JS  │─────▶│  Middleware  │─────▶│   Google AI          │ │
+│   └──────────────┘      └──────────────┘      └──────────────────────┘ │
+│                                                                         │
+│   User interactions, consent, real-time personalization                │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Data Flow Summary</h2>
+          <div class="steps-card">
+            <table class="flow-table">
+              <thead>
+                <tr>
+                  <th>Phase</th>
+                  <th>Source</th>
+                  <th>Action</th>
+                  <th>Destination</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Build-time</strong></td>
+                  <td>Shopify GraphQL</td>
+                  <td>11ty fetches products</td>
+                  <td>Webflow CMS</td>
+                </tr>
+                <tr>
+                  <td><strong>Build-time</strong></td>
+                  <td>Any GraphQL API</td>
+                  <td>Transform & map data</td>
+                  <td>Webflow CMS items</td>
+                </tr>
+                <tr>
+                  <td><strong>Runtime</strong></td>
+                  <td>User interactions</td>
+                  <td>Client JS → Webhooks</td>
+                  <td>Xano/n8n</td>
+                </tr>
+                <tr>
+                  <td><strong>Runtime</strong></td>
+                  <td>Xano/n8n</td>
+                  <td>Process & route</td>
+                  <td>Shopify Admin / Google AI</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Key Benefits</h2>
+          <div class="security-practices">
+            <ul class="practices-list">
+              <li><span class="practice-bullet">▪</span> <strong>GraphQL at build time</strong> - Full query power without client exposure</li>
+              <li><span class="practice-bullet">▪</span> <strong>Webflow visual design</strong> - Designer-friendly presentation layer</li>
+              <li><span class="practice-bullet">▪</span> <strong>SEO-optimized</strong> - Static content in Webflow CMS</li>
+              <li><span class="practice-bullet">▪</span> <strong>Secure</strong> - API tokens never reach the browser</li>
+              <li><span class="practice-bullet">▪</span> <strong>Scalable</strong> - Sync runs on schedule, not per-request</li>
+              <li><span class="practice-bullet">▪</span> <strong>Flexible</strong> - Runtime features via middleware layer</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shopify GraphQL Tab -->
+      <div class="tab-panel" id="tab-shopify-graphql">
+        <div class="code-section">
+          <h2 class="code-section-title">Shopify GraphQL Client</h2>
+          <p class="code-section-description">
+            11ty data file that fetches all products from Shopify Storefront API with pagination.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript (src/_data/shopify.js)</span>
+              <button class="copy-button" data-copy="shopify-client">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-shopify-client"><code>const fetch = require('node-fetch');
+require('dotenv').config();
+
+const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
+const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const API_VERSION = process.env.SHOPIFY_API_VERSION || '2024-01';
+
+const GRAPHQL_ENDPOINT = `https://${SHOPIFY_DOMAIN}/api/${API_VERSION}/graphql.json`;
+
+async function shopifyQuery(query, variables = {}) {
+  const response = await fetch(GRAPHQL_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  const json = await response.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  return json.data;
+}
+
+async function fetchAllProducts() {
+  const products = [];
+  let hasNextPage = true;
+  let cursor = null;
+
+  const query = `
+    query GetProducts($first: Int!, $after: String) {
+      products(first: $first, after: $after) {
+        pageInfo { hasNextPage, endCursor }
+        edges {
+          node {
+            id, handle, title, description, descriptionHtml
+            productType, vendor, tags
+            priceRange {
+              minVariantPrice { amount, currencyCode }
+            }
+            featuredImage { url, altText }
+            variants(first: 100) {
+              edges {
+                node {
+                  id, title, sku, availableForSale
+                  price { amount, currencyCode }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  while (hasNextPage) {
+    const data = await shopifyQuery(query, { first: 250, after: cursor });
+    products.push(...data.products.edges.map(e => e.node));
+    hasNextPage = data.products.pageInfo.hasNextPage;
+    cursor = data.products.pageInfo.endCursor;
+  }
+
+  return products;
+}
+
+module.exports = async function() {
+  const products = await fetchAllProducts();
+  return { products, fetchedAt: new Date().toISOString() };
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Products Query with Full Data</h2>
+          <p class="code-section-description">
+            Complete GraphQL query for fetching product data with variants, images, and collections.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">GraphQL</span>
+              <button class="copy-button" data-copy="products-query">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-products-query"><code>query GetProducts($first: Int!, $after: String) {
+  products(first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        id
+        handle
+        title
+        description
+        descriptionHtml
+        productType
+        vendor
+        tags
+        createdAt
+        updatedAt
+        publishedAt
+
+        priceRange {
+          minVariantPrice { amount, currencyCode }
+          maxVariantPrice { amount, currencyCode }
+        }
+
+        featuredImage { url, altText, width, height }
+
+        images(first: 10) {
+          edges {
+            node { url, altText, width, height }
+          }
+        }
+
+        variants(first: 100) {
+          edges {
+            node {
+              id, title, sku, availableForSale
+              price { amount, currencyCode }
+              compareAtPrice { amount, currencyCode }
+              selectedOptions { name, value }
+            }
+          }
+        }
+
+        collections(first: 10) {
+          edges {
+            node { id, handle, title }
+          }
+        }
+
+        seo { title, description }
+      }
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Webflow API Tab -->
+      <div class="tab-panel" id="tab-webflow-api">
+        <div class="code-section">
+          <h2 class="code-section-title">Webflow CMS API Client</h2>
+          <p class="code-section-description">
+            Rate-limited Webflow API wrapper for creating and updating CMS items.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript (src/_data/webflow.js)</span>
+              <button class="copy-button" data-copy="webflow-client">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-webflow-client"><code>const fetch = require('node-fetch');
+const pLimit = require('p-limit');
+require('dotenv').config();
+
+const WEBFLOW_API_TOKEN = process.env.WEBFLOW_API_TOKEN;
+const API_BASE = 'https://api.webflow.com/v2';
+const limit = pLimit(1);
+let lastRequestTime = 0;
+
+async function webflowFetch(endpoint, options = {}) {
+  return limit(async () => {
+    // Rate limit: 60 requests/minute
+    const now = Date.now();
+    const delay = 350 - (now - lastRequestTime);
+    if (delay > 0) await new Promise(r => setTimeout(r, delay));
+    lastRequestTime = Date.now();
+
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers: {
+        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(`Webflow API: ${response.status} - ${JSON.stringify(error)}`);
+    }
+
+    return response.json();
+  });
+}
+
+async function createItem(collectionId, fieldData) {
+  return webflowFetch(`/collections/${collectionId}/items`, {
+    method: 'POST',
+    body: JSON.stringify({
+      isArchived: false,
+      isDraft: false,
+      fieldData: fieldData,
+    }),
+  });
+}
+
+async function updateItem(collectionId, itemId, fieldData) {
+  return webflowFetch(`/collections/${collectionId}/items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      isArchived: false,
+      isDraft: false,
+      fieldData: fieldData,
+    }),
+  });
+}
+
+async function getCollectionItems(collectionId) {
+  const items = [];
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const data = await webflowFetch(
+      `/collections/${collectionId}/items?offset=${offset}&limit=100`
+    );
+    items.push(...(data.items || []));
+    hasMore = data.items?.length === 100;
+    offset += 100;
+  }
+
+  return items;
+}
+
+module.exports = { createItem, updateItem, getCollectionItems };</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Schema Mapper</h2>
+          <p class="code-section-description">
+            Transform Shopify product data to Webflow CMS field structure.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript (scripts/schema-mapper.js)</span>
+              <button class="copy-button" data-copy="schema-mapper">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-schema-mapper"><code>function extractShopifyId(gid) {
+  const match = gid?.match(/\/(\d+)$/);
+  return match ? match[1] : gid;
+}
+
+function mapProductToWebflow(shopifyProduct) {
+  const { id, handle, title, description, priceRange, featuredImage, variants } = shopifyProduct;
+  const firstVariant = variants?.edges?.[0]?.node;
+
+  return {
+    // Required Webflow fields
+    name: title,
+    slug: handle,
+
+    // Custom fields (match your Webflow schema)
+    'shopify-id': extractShopifyId(id),
+    'product-handle': handle,
+    'product-title': title,
+    'description': description || '',
+    'price': parseFloat(priceRange?.minVariantPrice?.amount) || 0,
+    'featured-image': featuredImage?.url || '',
+    'available': firstVariant?.availableForSale ?? true,
+    'sku': firstVariant?.sku || '',
+    'variants-json': JSON.stringify(
+      variants?.edges?.map(e => ({
+        id: extractShopifyId(e.node.id),
+        title: e.node.title,
+        sku: e.node.sku,
+        price: e.node.price?.amount,
+        available: e.node.availableForSale,
+      })) || []
+    ),
+    'last-synced': new Date().toISOString(),
+  };
+}
+
+module.exports = { mapProductToWebflow, extractShopifyId };</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sync Script Tab -->
+      <div class="tab-panel" id="tab-sync-script">
+        <div class="code-section">
+          <h2 class="code-section-title">Main Sync Orchestration</h2>
+          <p class="code-section-description">
+            Script that fetches from Shopify and syncs to Webflow with incremental updates and ID mapping.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">JavaScript (scripts/sync-to-webflow.js)</span>
+              <button class="copy-button" data-copy="sync-script">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-sync-script"><code>require('dotenv').config();
+const { fetchAllProducts } = require('../src/_data/shopify');
+const webflow = require('../src/_data/webflow');
+const { mapProductToWebflow, extractShopifyId } = require('./schema-mapper');
+
+const COLLECTION_ID = process.env.WEBFLOW_COLLECTION_PRODUCTS;
+const DRY_RUN = process.argv.includes('--dry-run');
+
+async function syncProducts() {
+  console.log('Fetching products from Shopify...');
+  const products = await fetchAllProducts();
+  console.log(`Fetched ${products.length} products`);
+
+  console.log('Getting existing Webflow items...');
+  const existingItems = await webflow.getCollectionItems(COLLECTION_ID);
+  const existingByShopifyId = {};
+  for (const item of existingItems) {
+    const sid = item.fieldData['shopify-id'];
+    if (sid) existingByShopifyId[sid] = item;
+  }
+
+  const stats = { created: 0, updated: 0, skipped: 0 };
+
+  for (const product of products) {
+    const shopifyId = extractShopifyId(product.id);
+    const mappedData = mapProductToWebflow(product);
+    const existing = existingByShopifyId[shopifyId];
+
+    if (DRY_RUN) {
+      console.log(`[DRY RUN] Would ${existing ? 'update' : 'create'}: ${product.title}`);
+      stats.skipped++;
+      continue;
+    }
+
+    if (existing) {
+      await webflow.updateItem(COLLECTION_ID, existing.id, mappedData);
+      console.log(`Updated: ${product.title}`);
+      stats.updated++;
+    } else {
+      await webflow.createItem(COLLECTION_ID, mappedData);
+      console.log(`Created: ${product.title}`);
+      stats.created++;
+    }
+  }
+
+  console.log(`\nSync complete: ${stats.created} created, ${stats.updated} updated, ${stats.skipped} skipped`);
+}
+
+syncProducts().catch(console.error);</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Environment Configuration</h2>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">.env.example</span>
+              <button class="copy-button" data-copy="env-config">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-env-config"><code># Shopify Storefront API
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+SHOPIFY_STOREFRONT_ACCESS_TOKEN=your-storefront-token
+SHOPIFY_API_VERSION=2024-01
+
+# Webflow CMS API
+WEBFLOW_API_TOKEN=your-webflow-token
+WEBFLOW_SITE_ID=your-site-id
+WEBFLOW_COLLECTION_PRODUCTS=collection-id-for-products
+
+# Sync Configuration
+SYNC_BATCH_SIZE=100
+SYNC_RATE_LIMIT_MS=350</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">NPM Scripts</h2>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">package.json scripts</span>
+            </div>
+            <pre class="code-content"><code>{
+  "scripts": {
+    "build": "eleventy",
+    "sync": "node scripts/sync-to-webflow.js",
+    "sync:products": "node scripts/sync-to-webflow.js --collection=products",
+    "sync:dry-run": "node scripts/sync-to-webflow.js --dry-run",
+    "dev": "eleventy --serve"
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- CI/CD Tab -->
+      <div class="tab-panel" id="tab-cicd">
+        <div class="code-section">
+          <h2 class="code-section-title">GitHub Actions Workflow</h2>
+          <p class="code-section-description">
+            Automated sync workflow that runs on schedule, manual trigger, or Shopify webhook.
+          </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">YAML (.github/workflows/sync-webflow.yml)</span>
+              <button class="copy-button" data-copy="github-actions">
+                <span class="copy-icon">📋</span>
+                Copy
+              </button>
+            </div>
+            <pre class="code-content" id="code-github-actions"><code>name: Sync Shopify to Webflow
+
+on:
+  # Scheduled sync (every 6 hours)
+  schedule:
+    - cron: '0 */6 * * *'
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      collection:
+        description: 'Collection to sync (products, collections, or all)'
+        default: 'all'
+      publish:
+        description: 'Publish site after sync'
+        type: boolean
+        default: true
+
+  # Webhook trigger (from Shopify)
+  repository_dispatch:
+    types: [shopify-update]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run sync
+        env:
+          SHOPIFY_STORE_DOMAIN: $
+          SHOPIFY_STOREFRONT_ACCESS_TOKEN: $
+          WEBFLOW_API_TOKEN: $
+          WEBFLOW_SITE_ID: $
+          WEBFLOW_COLLECTION_PRODUCTS: $
+        run: |
+          ARGS=""
+          if [ "$" == "true" ]; then
+            ARGS="$ARGS --publish"
+          fi
+          npm run sync -- $ARGS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sync-logs
+          path: logs/
+          retention-days: 30</code></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2 class="code-section-title">Webflow Collection Schema</h2>
+          <p class="code-section-description">
+            Required fields in your Webflow Products collection.
+          </p>
+          <div class="steps-card">
+            <table class="flow-table">
+              <thead>
+                <tr>
+                  <th>Field Name</th>
+                  <th>Slug</th>
+                  <th>Type</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Name</td><td>name</td><td>Plain Text</td><td>Yes</td></tr>
+                <tr><td>Slug</td><td>slug</td><td>Plain Text</td><td>Yes</td></tr>
+                <tr><td>Shopify ID</td><td>shopify-id</td><td>Plain Text</td><td>Yes</td></tr>
+                <tr><td>Product Title</td><td>product-title</td><td>Plain Text</td><td>No</td></tr>
+                <tr><td>Description</td><td>description</td><td>Plain Text</td><td>No</td></tr>
+                <tr><td>Price</td><td>price</td><td>Number</td><td>No</td></tr>
+                <tr><td>Featured Image</td><td>featured-image</td><td>Image</td><td>No</td></tr>
+                <tr><td>Available</td><td>available</td><td>Switch</td><td>No</td></tr>
+                <tr><td>SKU</td><td>sku</td><td>Plain Text</td><td>No</td></tr>
+                <tr><td>Variants JSON</td><td>variants-json</td><td>Plain Text</td><td>No</td></tr>
+                <tr><td>Last Synced</td><td>last-synced</td><td>Date/Time</td><td>No</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.flow-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.flow-table th,
+.flow-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.flow-table th {
+  background: var(--color-bg-secondary, #f9fafb);
+  font-weight: 600;
+}
+
+.flow-table tr:hover {
+  background: var(--color-bg-secondary, #f9fafb);
+}
+</style>
+
+    </div>
+  </main>
+  
+  <footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-left">
+        <span class="footer-title">Webflow Integration Knowledge Base</span>
+        <span class="footer-separator">·</span>
+        <span>Built with 11ty</span>
+      </div>
+      <div class="footer-right">
+        <span>Version 1.0</span>
+        <span class="footer-separator">·</span>
+        <span>2026</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+  <script src="/js/main.js"></script>
+</body>
+</html>
