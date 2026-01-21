@@ -526,6 +526,377 @@ USER VISITS SITE
       </div>
 
       <div class="docs__section">
+        <h2>Headless Forms Architecture</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="headless-forms">Copy</button>
+          </div>
+          <pre class="code-block__content" id="headless-forms"><code>┌─────────────────────────────────────────────────────────────────┐
+│                    HEADLESS FORMS ARCHITECTURE                   │
+│              (Decoupled Form Submission & Processing)            │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│         Client Webflow/11ty/Shopify Liquid Theme                │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │  Checkout/Form  │  │  Xano API       │  │  GTM Tracking   │  │
+│  │  UI Components  │  │  Library        │  │  Code           │  │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘  │
+│           │                    │                    │           │
+│           └────────────────────┼────────────────────┘           │
+│                                │                                │
+│                                ▼                                │
+│               ┌────────────────────────────────┐                │
+│               │    Form Validation & Events    │                │
+│               │    - Client-side validation    │                │
+│               │    - GTM checkout_start event  │                │
+│               │    - GTM checkout_submit event │                │
+│               └────────────────┬───────────────┘                │
+└────────────────────────────────┼────────────────────────────────┘
+                                 │
+                                 │ POST /api/checkout (HTTPS/JSON)
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    MIDDLEWARE LAYER (Xano)                      │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                  POST Endpoints                           │  │
+│  │  /checkout/create  │  /webhooks/shopify                   │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                │                                │
+│  ┌─────────────────┐  ┌────────┴────────┐  ┌─────────────────┐  │
+│  │   Database      │  │ UCP Data        │  │  SD-JWT+kb      │  │
+│  │   Storage       │  │ Transformer     │  │  Validator      │  │
+│  └─────────────────┘  └────────┬────────┘  └─────────────────┘  │
+│                                │                                │
+└────────────────────────────────┼────────────────────────────────┘
+                                 │
+                                 │ Shopify UCP API
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   COMMERCE LAYER (Shopify)                      │
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │   UCP API       │  │ Order           │  │  Webhook        │  │
+│  │   (Checkout)    │  │ Management      │  │  System         │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  Customer CRM  │  Meta Objects  │  Inventory Management    ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+                                 │
+                                 │ Async Webhooks (10-30s)
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     ANALYTICS LAYER                             │
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │  Google Tag     │  │  Google         │  │  Data Layer     │  │
+│  │  Manager (GTM)  │  │  Analytics 4    │  │  Events         │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+│                                                                 │
+│  Events: checkout_start → checkout_submit → purchase            │
+└─────────────────────────────────────────────────────────────────┘
+
+FORM TYPES SUPPORTED:
+━━━━━━━━━━━━━━━━━━━━━
+├── Checkout Forms      → UCP API + Order Creation + GTM purchase
+├── Contact Forms       → Email notification + CRM
+├── Newsletter Signup   → Shopify Customer + Shopify Native Email Provider
+├── Product Inquiry     → Shopify Customer Note + Meta Objects
+├── Quote Request       → Custom workflow + Admin email
+└── Custom Forms        → Configurable handlers</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Export Code to Native Shopify</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="export-native-shopify">Copy</button>
+          </div>
+          <pre class="code-block__content" id="export-native-shopify"><code>┌─────────────────────────────────────────────────────────────────┐
+│                 EXPORT CODE TO NATIVE SHOPIFY                    │
+│                (Webflow/11ty → Shopify Theme)                    │
+└─────────────────────────────────────────────────────────────────┘
+
+SOURCE (Headless)                         TARGET (Shopify Theme)
+━━━━━━━━━━━━━━━━━━                        ━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────────┐                      ┌──────────────────────┐
+│  Webflow/11ty    │                      │   Shopify Theme      │
+│  Component       │                      │   (Dawn/Custom)      │
+│                  │                      │                      │
+│  ┌────────────┐  │      EXPORT          │  ┌────────────────┐  │
+│  │ Form UI    │  │  ─────────────>      │  │  .liquid       │  │
+│  │ Xano API   │  │                      │  │  section file  │  │
+│  │ GTM Code   │  │                      │  │  + GTM events  │  │
+│  └────────────┘  │                      │  └────────────────┘  │
+└──────────────────┘                      └──────────────────────┘
+
+                    CONVERSION PROCESS
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  STEP 1: Extract Component + Integrations                       │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  • Identify form/checkout UI boundaries                 │   │
+│  │  • Extract HTML structure                               │   │
+│  │  • Preserve Xano API endpoint configurations            │   │
+│  │  • Maintain GTM data layer event triggers               │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  STEP 2: Transform to Liquid                                    │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  • Convert dynamic values to Liquid variables           │   │
+│  │  • Replace loops with {%raw%}{%{%endraw%} for {%raw%}%}{%endraw%} tags                    │   │
+│  │  • Add schema settings for Xano endpoint URL            │   │
+│  │  • Include GTM container ID as theme setting            │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  STEP 3: Create Section Schema                                  │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  {%raw%}{%{%endraw%} schema {%raw%}%}{%endraw%}                                           │   │
+│  │  {                                                      │   │
+│  │    "name": "UCP Checkout Form",                         │   │
+│  │    "settings": [                                        │   │
+│  │      { "id": "xano_endpoint", "type": "url" },          │   │
+│  │      { "id": "gtm_container", "type": "text" }          │   │
+│  │    ],                                                   │   │
+│  │    "blocks": [...],                                     │   │
+│  │    "presets": [...]                                     │   │
+│  │  }                                                      │   │
+│  │  {%raw%}{%{%endraw%} endschema {%raw%}%}{%endraw%}                                        │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  STEP 4: Package Assets                                         │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  /sections/                                             │   │
+│  │    └── ucp-checkout-form.liquid                         │   │
+│  │  /assets/                                               │   │
+│  │    ├── xano-api-library.js   (API integration)          │   │
+│  │    ├── gtm-events.js         (Analytics tracking)       │   │
+│  │    └── checkout-form.css                                │   │
+│  │  /snippets/                                             │   │
+│  │    └── form-field.liquid     (Reusable fields)          │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+OUTPUT FILE STRUCTURE:
+━━━━━━━━━━━━━━━━━━━━━━
+shopify-export/
+├── sections/
+│   └── ucp-checkout-form.liquid
+├── assets/
+│   ├── xano-api-library.js
+│   ├── gtm-events.js
+│   └── checkout-form.css
+├── snippets/
+│   └── form-field.liquid
+└── README.md (Xano + GTM setup instructions)
+
+PRESERVED INTEGRATIONS:
+━━━━━━━━━━━━━━━━━━━━━━━
+├── Xano Middleware    → POST /checkout/create endpoint
+├── GTM Events         → checkout_start, checkout_submit, purchase
+├── UCP Data Format    → SD-JWT+kb validation compatible
+└── Webhook Support    → /webhooks/shopify endpoint ready</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Export Form Code as Shopify Block</h2>
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-block__language">ascii</span>
+            <button class="code-block__copy" data-copy-target="export-form-block">Copy</button>
+          </div>
+          <pre class="code-block__content" id="export-form-block"><code>┌─────────────────────────────────────────────────────────────────┐
+│                EXPORT FORM CODE AS SHOPIFY BLOCK                 │
+│         (Webflow/11ty/Shopify Form → Shopify Section Block)      │
+└─────────────────────────────────────────────────────────────────┘
+
+WEBFLOW/11TY/SHOPIFY FORM                 SHOPIFY BLOCK
+━━━━━━━━━━━━━━━━━━━━━━━                   ━━━━━━━━━━━━━
+
+┌──────────────────┐                      ┌──────────────────────┐
+│  &lt;form&gt;          │                      │  {%raw%}{%{%endraw%} schema {%raw%}%}{%endraw%}        │
+│    &lt;input&gt;       │      CONVERT         │    "blocks": [{      │
+│    &lt;select&gt;      │  ─────────────>      │      "type": "form"  │
+│    &lt;textarea&gt;    │                      │    }]                │
+│    &lt;button&gt;      │                      │  {%raw%}{%{%endraw%} endschema {%raw%}%}{%endraw%}     │
+│  &lt;/form&gt;         │                      │                      │
+└──────────────────┘                      └──────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    BLOCK SCHEMA STRUCTURE                        │
+└─────────────────────────────────────────────────────────────────┘
+
+{%raw%}{%{%endraw%} schema {%raw%}%}{%endraw%}
+{
+  "name": "Form Section",
+  "tag": "section",
+  "class": "form-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "form_title",
+      "label": "Form Title",
+      "default": "Contact Us"
+    },
+    {
+      "type": "select",
+      "id": "form_type",
+      "label": "Form Type",
+      "options": [
+        { "value": "contact", "label": "Contact Form" },
+        { "value": "newsletter", "label": "Newsletter" },
+        { "value": "quote", "label": "Quote Request" }
+      ]
+    },
+    {
+      "type": "url",
+      "id": "form_endpoint",
+      "label": "Form Submission Endpoint"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text_field",
+      "name": "Text Field",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Field Label" },
+        { "type": "text", "id": "name", "label": "Field Name" },
+        { "type": "checkbox", "id": "required", "label": "Required" }
+      ]
+    },
+    {
+      "type": "email_field",
+      "name": "Email Field",
+      "settings": [...]
+    },
+    {
+      "type": "textarea_field",
+      "name": "Textarea",
+      "settings": [...]
+    },
+    {
+      "type": "select_field",
+      "name": "Dropdown",
+      "settings": [...]
+    }
+  ],
+  "presets": [{
+    "name": "Contact Form",
+    "blocks": [
+      { "type": "text_field" },
+      { "type": "email_field" },
+      { "type": "textarea_field" }
+    ]
+  }]
+}
+{%raw%}{%{%endraw%} endschema {%raw%}%}{%endraw%}
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    LIQUID TEMPLATE STRUCTURE                     │
+└─────────────────────────────────────────────────────────────────┘
+
+&lt;div class="form-section"&gt;
+  &lt;h2&gt;{%raw%}{{ section.settings.form_title }}{%endraw%}&lt;/h2&gt;
+
+  &lt;form action="{%raw%}{{ section.settings.form_endpoint }}{%endraw%}"
+        method="POST"
+        class="headless-form"
+        data-form-type="{%raw%}{{ section.settings.form_type }}{%endraw%}"&gt;
+
+    {%raw%}{%{%endraw%} for block in section.blocks {%raw%}%}{%endraw%}
+      {%raw%}{%{%endraw%} case block.type {%raw%}%}{%endraw%}
+
+        {%raw%}{%{%endraw%} when 'text_field' {%raw%}%}{%endraw%}
+          &lt;div class="form-field" {%raw%}{{ block.shopify_attributes }}{%endraw%}&gt;
+            &lt;label for="field-{%raw%}{{ block.id }}{%endraw%}"&gt;
+              {%raw%}{{ block.settings.label }}{%endraw%}
+            &lt;/label&gt;
+            &lt;input type="text"
+                   id="field-{%raw%}{{ block.id }}{%endraw%}"
+                   name="{%raw%}{{ block.settings.name }}{%endraw%}"
+                   {%raw%}{%{%endraw%} if block.settings.required {%raw%}%}{%endraw%}required{%raw%}{%{%endraw%} endif {%raw%}%}{%endraw%}&gt;
+          &lt;/div&gt;
+
+        {%raw%}{%{%endraw%} when 'email_field' {%raw%}%}{%endraw%}
+          &lt;div class="form-field" {%raw%}{{ block.shopify_attributes }}{%endraw%}&gt;
+            &lt;label for="field-{%raw%}{{ block.id }}{%endraw%}"&gt;
+              {%raw%}{{ block.settings.label }}{%endraw%}
+            &lt;/label&gt;
+            &lt;input type="email"
+                   id="field-{%raw%}{{ block.id }}{%endraw%}"
+                   name="{%raw%}{{ block.settings.name }}{%endraw%}"
+                   {%raw%}{%{%endraw%} if block.settings.required {%raw%}%}{%endraw%}required{%raw%}{%{%endraw%} endif {%raw%}%}{%endraw%}&gt;
+          &lt;/div&gt;
+
+        {%raw%}{%{%endraw%} when 'textarea_field' {%raw%}%}{%endraw%}
+          &lt;div class="form-field" {%raw%}{{ block.shopify_attributes }}{%endraw%}&gt;
+            &lt;label for="field-{%raw%}{{ block.id }}{%endraw%}"&gt;
+              {%raw%}{{ block.settings.label }}{%endraw%}
+            &lt;/label&gt;
+            &lt;textarea id="field-{%raw%}{{ block.id }}{%endraw%}"
+                      name="{%raw%}{{ block.settings.name }}{%endraw%}"
+                      rows="5"
+                      {%raw%}{%{%endraw%} if block.settings.required {%raw%}%}{%endraw%}required{%raw%}{%{%endraw%} endif {%raw%}%}{%endraw%}&gt;
+            &lt;/textarea&gt;
+          &lt;/div&gt;
+
+      {%raw%}{%{%endraw%} endcase {%raw%}%}{%endraw%}
+    {%raw%}{%{%endraw%} endfor {%raw%}%}{%endraw%}
+
+    &lt;button type="submit" class="btn btn--primary"&gt;
+      Submit
+    &lt;/button&gt;
+  &lt;/form&gt;
+&lt;/div&gt;
+
+┌─────────────────────────────────────────────────────────────────┐
+│                      INTEGRATION FLOW                            │
+└─────────────────────────────────────────────────────────────────┘
+
+     Shopify Theme Editor                 Middleware (Xano)
+     ━━━━━━━━━━━━━━━━━━━━                ━━━━━━━━━━━━━━━━━━
+            │                                    │
+            │ 1. Merchant adds Form Section      │
+            │    via Theme Customizer            │
+            │                                    │
+            │ 2. Configure form fields           │
+            │    using blocks                    │
+            │                                    │
+            │ 3. Set form endpoint URL ──────────│
+            │                                    │
+            │         [Customer Submits Form]    │
+            │                                    │
+            │ 4. Form POSTs to endpoint ─────────>
+            │                                    │
+            │                     5. Process submission
+            │                        • Validate data
+            │                        • Store in DB
+            │                        • Trigger actions
+            │                                    │
+            │ 6. Return success/error <───────────
+            │                                    │
+            │ 7. Display confirmation            │
+            │    message to customer             │
+            │                                    │</code></pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
         <h2>Download Complete Flow Charts</h2>
         <p>Download the complete ASCII flow chart document with all diagrams and detailed annotations.</p>
         <a href="/ASCII_FLOW_CHART.md" download class="btn btn--primary btn--large">

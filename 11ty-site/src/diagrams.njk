@@ -1,0 +1,308 @@
+---
+layout: layouts/base.njk
+title: "Visual Diagrams"
+description: "Mermaid diagrams for the Webflow/11ty/Shopify integration architecture"
+---
+
+<main class="docs">
+  <div class="docs__container">
+    <aside class="docs__sidebar">
+      <nav class="docs__nav">
+        <a href="/" class="docs__nav-link">Overview</a>
+        <a href="/architecture/" class="docs__nav-link">Architecture</a>
+        <a href="/implementation/" class="docs__nav-link">Implementation</a>
+        <a href="/eleventy-graphql/" class="docs__nav-link">11ty GraphQL</a>
+        <a href="/prd/" class="docs__nav-link">Claude PRD</a>
+        <a href="/flow-chart/" class="docs__nav-link">Flow Chart</a>
+        <a href="/diagrams/" class="docs__nav-link docs__nav-link--active">Diagrams</a>
+      </nav>
+    </aside>
+
+    <article class="docs__content">
+      <header class="docs__header">
+        <h1 class="docs__title">Visual Diagrams</h1>
+        <p class="docs__subtitle">Mermaid diagrams illustrating the complete integration architecture</p>
+      </header>
+
+      <div class="docs__section">
+        <h2>Overview</h2>
+        <p>These diagrams illustrate the updated architecture with the following key features:</p>
+        <ul>
+          <li><strong>Frontend Layer:</strong> Supports Webflow, 11ty, and Native Shopify Theme</li>
+          <li><strong>Email Provider:</strong> Native Shopify Email</li>
+          <li><strong>Backend Service:</strong> Shared Xano middleware</li>
+        </ul>
+      </div>
+
+      <div class="docs__section">
+        <h2>1. Architecture Diagram</h2>
+        <p>High-level view of system components organized into four layers: Frontend, Middleware, Commerce, and Analytics.</p>
+        <div class="mermaid-diagram">
+          <pre class="mermaid">
+graph TB
+    subgraph Frontend["Frontend Layer (Webflow / 11ty / Native Shopify Theme)"]
+        FormUI[Checkout Form UI]
+        XanoLib[Xano Webflow API Library]
+        GTMLib[GTM Tracking Library]
+        ShowData[Show Success / Data / Alert]
+
+        FormUI --> XanoLib
+        XanoLib --> ShowData
+        XanoLib --> GTMLib
+    end
+
+    subgraph Middleware["Middleware Layer (Shared Xano)"]
+        CheckoutAPI[POST /checkout/create]
+        WebhookAPI[POST /webhooks/shopify/checkout]
+        Validator[SD-JWT+kb Validator]
+        Transformer[UCP Data Transformer]
+        Database[(Database:<br/>checkout_sessions<br/>user_consent_history<br/>shopify_webhooks)]
+        OrderDetails[Order Details<br/>with API Key]
+        SyncData[Sync Data]
+        LogUpdate[Log & Update]
+
+        CheckoutAPI --> Validator
+        Validator --> Database
+        CheckoutAPI --> Transformer
+        WebhookAPI --> LogUpdate
+        LogUpdate --> Database
+        WebhookAPI --> SyncData
+    end
+
+    subgraph Commerce["Commerce Layer (Shopify)"]
+        UCPAPI[UCP API Endpoint<br/>+ ap2.checkout_mandate]
+        WebhookSys[Webhook System]
+        OrderMgmt[Order Management]
+        CRM[Customer CRM<br/>+ Meta Objects]
+        ShopifyEmail[Native Shopify Email]
+
+        UCPAPI --> OrderMgmt
+        OrderMgmt --> WebhookSys
+        WebhookSys --> CRM
+        OrderMgmt --> ShopifyEmail
+    end
+
+    subgraph Analytics["Analytics Layer"]
+        GTM[Google Tag Manager]
+        DataLayer[Data Layer Events]
+        GA4[Google Analytics 4]
+
+        GTM --> DataLayer
+        DataLayer --> GA4
+    end
+
+    %% Connections between layers
+    XanoLib -->|AJAX POST| CheckoutAPI
+    Transformer -->|UCP Request<br/>+ ap2.checkout_mandate| UCPAPI
+    UCPAPI -->|Success Response| OrderDetails
+    OrderDetails --> XanoLib
+    WebhookSys -.->|Async Webhook<br/>checkouts/complete| WebhookAPI
+    SyncData -->|Update| CRM
+    GTMLib -->|Push Events<br/>via dataLayer| GTM
+    WebhookAPI -->|Verify HMAC| WebhookSys
+          </pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>2. Data Flow Diagram</h2>
+        <p>Complete checkout process flow with decision points, error handling paths, and asynchronous webhook processing.</p>
+        <div class="mermaid-diagram">
+          <pre class="mermaid">
+graph TB
+    %% User Interaction Layer
+    Start([User Fills Checkout Form])
+    ClientValidation[Client-Side Validation]
+    GTMStart[GTM Track checkout_start]
+    UserSubmit([User Clicks Submit])
+    XanoIntercept[Xano Webflow API<br/>Intercepts Submit]
+    SerializeData[Serializes Form Data<br/>buyer email to JSON]
+    GTMSubmit[GTM Track checkout_submit]
+
+    %% Xano Middleware Layer
+    XanoReceive[Shared Xano Receives Request]
+    ValidatePattern{Validate<br/>SD-JWT+kb<br/>Pattern}
+    CreateSession[Create checkout_sessions<br/>Record]
+    TransformUCP[Transform to<br/>UCP Format]
+    AddMandate[Add ap2.checkout_mandate<br/>to Request]
+    PostShopify[POST to Shopify<br/>UCP API]
+
+    %% Shopify Commerce Layer
+    ShopifyReceive[Shopify Commerce Platform<br/>Receives Request]
+    ValidateMandate{Validate<br/>Checkout<br/>Mandate}
+    ProcessCheckout[Process Checkout]
+    CreateOrder[Create Order<br/>Async]
+
+    %% Asynchronous Webhook Flow
+    WebhookSend[Shopify Sends<br/>checkouts/complete<br/>Webhook]
+    XanoWebhook[Shared Xano Webhook Endpoint]
+    VerifyHMAC[Verify HMAC Signature]
+    LogWebhook[Log to shopify_webhooks<br/>table]
+    UpdateStatus[Update checkout_sessions<br/>status = completed]
+    SyncCRM[Sync to Shopify<br/>Customer CRM]
+    UpdateMeta[Update Meta Objects<br/>+ User Tags]
+    GTMUpdate[GTM Track<br/>first_object_update]
+    Return200[Return 200]
+
+    %% Response Handling
+    XanoSuccess[Shared Xano Receives Success]
+    XanoError[Return 400 Error]
+    DisplayError[Display Validation Error]
+    GTMPurchase[GTM Track purchase]
+    SuccessPage[Redirect to<br/>Success Page]
+    SuccessMessage[Show Success Message]
+    WebflowError[Webflow Shows<br/>as form-fail]
+
+    %% Flow
+    Start --> ClientValidation
+    ClientValidation -->|Valid| GTMStart
+    GTMStart --> UserSubmit
+    UserSubmit --> XanoIntercept
+    XanoIntercept --> SerializeData
+    SerializeData --> GTMSubmit
+    GTMSubmit --> XanoReceive
+
+    XanoReceive --> ValidatePattern
+    ValidatePattern -->|Invalid| XanoError
+    ValidatePattern -->|Valid| CreateSession
+    CreateSession --> TransformUCP
+    TransformUCP --> AddMandate
+    AddMandate --> PostShopify
+
+    PostShopify --> ShopifyReceive
+    ShopifyReceive --> ValidateMandate
+    ValidateMandate -->|Invalid| XanoError
+    ValidateMandate -->|Valid| ProcessCheckout
+    ProcessCheckout --> CreateOrder
+    CreateOrder --> XanoSuccess
+
+    %% Async Webhook Path
+    CreateOrder -.->|Async| WebhookSend
+    WebhookSend --> XanoWebhook
+    XanoWebhook --> VerifyHMAC
+    VerifyHMAC -->|Valid| LogWebhook
+    VerifyHMAC -->|Invalid| Return200
+    LogWebhook --> UpdateStatus
+    UpdateStatus --> SyncCRM
+    SyncCRM --> UpdateMeta
+    UpdateMeta --> GTMUpdate
+    GTMUpdate --> Return200
+
+    %% Error and Success Paths
+    XanoError --> WebflowError
+    WebflowError --> DisplayError
+    XanoSuccess --> GTMPurchase
+    GTMPurchase --> SuccessPage
+    SuccessPage --> SuccessMessage
+          </pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>3. Sequence Diagram</h2>
+        <p>Chronological interactions between system components across six phases.</p>
+        <div class="mermaid-diagram">
+          <pre class="mermaid">
+sequenceDiagram
+    participant User
+    participant Frontend as Frontend Layer<br/>(Webflow/11ty/Native Shopify Theme)
+    participant XanoAPI as Xano Webflow API
+    participant GTM as Google Tag Manager
+    participant Xano as Shared Xano Middleware
+    participant Shopify as Shopify UCP API
+    participant ShopifyWebhook as Shopify Webhooks
+    participant ShopifyEmail as Native Shopify Email
+
+    Note over User,Frontend: Phase 1: Form Interaction (0-2 seconds)
+    User->>Frontend: Fill out checkout form
+    User->>Frontend: Enter email address
+    Frontend->>GTM: Push checkout_start event
+
+    Note over User,Frontend: Phase 2: Form Submission (2-3 seconds)
+    User->>Frontend: Click "Place Order"
+    Frontend->>XanoAPI: Form submission
+    XanoAPI->>GTM: Push checkout_submit event
+
+    Note over XanoAPI,Xano: Phase 3: Xano Processing (3-4 seconds)
+    XanoAPI->>Xano: POST /checkout/create<br/>with form data
+    Xano->>Xano: Validate SD-JWT+kb pattern
+    Xano->>Xano: Create checkout_sessions record
+    Xano->>Xano: Transform to UCP format
+    Xano->>Xano: Add ap2.checkout_mandate
+
+    Note over Xano,Shopify: Phase 4: Shopify Validation (4-5 seconds)
+    Xano->>Shopify: POST to Shopify UCP API<br/>with UCP request + ap2.checkout_mandate
+    Shopify->>Shopify: Validate checkout mandate
+    Shopify->>Shopify: Create order
+    Shopify->>Xano: Order details + Checkout ID
+
+    Note over Xano,Frontend: Phase 5: Response Handling (5-6 seconds)
+    Xano->>Xano: Update checkout_sessions<br/>with checkout_id
+    Xano->>XanoAPI: Success response
+    XanoAPI->>GTM: Push purchase event<br/>with transaction data
+    XanoAPI->>Frontend: Display success message
+    Frontend->>User: Show success page
+
+    rect rgb(255, 249, 196)
+        Note over ShopifyWebhook,GTM: Phase 6: Webhook Processing (10-30 seconds, async)
+        ShopifyWebhook->>Xano: POST /webhooks/shopify/checkout<br/>with checkout data
+        Xano->>Xano: Verify HMAC signature
+        Xano->>Xano: Log to shopify_webhooks table
+        Xano->>Xano: Update checkout_sessions<br/>status = completed
+        Xano->>Shopify: Sync to Shopify Customer CRM
+        Xano->>Shopify: Update Meta Objects + Tags
+        Xano->>ShopifyEmail: Trigger Native Shopify Email
+        Xano->>GTM: Push object_update event
+        GTM->>GTM: Track GTM event
+        Xano->>ShopifyWebhook: 200 OK
+    end
+          </pre>
+        </div>
+      </div>
+
+      <div class="docs__section">
+        <h2>Color Coding</h2>
+        <table class="docs__table">
+          <thead>
+            <tr>
+              <th>Color</th>
+              <th>Layer/Operation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span style="background:#e3f2fd;padding:2px 8px;border-radius:4px;">Light Blue</span></td>
+              <td>User interaction points and frontend operations</td>
+            </tr>
+            <tr>
+              <td><span style="background:#fff3e0;padding:2px 8px;border-radius:4px;">Tan/Beige</span></td>
+              <td>Shared Xano middleware operations</td>
+            </tr>
+            <tr>
+              <td><span style="background:#e8f5e9;padding:2px 8px;border-radius:4px;">Light Green</span></td>
+              <td>Shopify commerce operations</td>
+            </tr>
+            <tr>
+              <td><span style="background:#f3e5f5;padding:2px 8px;border-radius:4px;">Light Purple</span></td>
+              <td>Asynchronous webhook processing</td>
+            </tr>
+            <tr>
+              <td><span style="background:#fff9c4;padding:2px 8px;border-radius:4px;">Yellow</span></td>
+              <td>GTM tracking events</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </article>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose'
+  });
+</script>
