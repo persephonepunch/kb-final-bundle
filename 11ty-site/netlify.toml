@@ -1,6 +1,11 @@
 [build]
   publish = "_site"
-  command = "echo 'Using pre-built site'"
+  command = "echo 'Using pre-built site - v2'"
 
 [build.environment]
   NODE_VERSION = "20"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
